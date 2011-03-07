@@ -33,7 +33,6 @@ extern "C" {
 
 #include <nds.h>
 // #include <dswifi7.h>
-#include "../audio/BlockDecoder.h"
 #include <nds/fifocommon.h>
 #include <nds/fifomessages.h>
 

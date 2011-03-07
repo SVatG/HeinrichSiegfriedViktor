@@ -24,9 +24,9 @@ int main()
 	// Init NitroFS for data loading.
 	nitroFSInitAdv( BINARY_NAME );
 
-	mmInitDefault( "nitro:/zik/music.bin" );
-	mmLoad( MOD_LIGHTMUSIC3_SHORT );
-	mmStart( MOD_LIGHTMUSIC3_SHORT, MM_PLAY_ONCE );
+// 	mmInitDefault( "nitro:/zik/music.bin" );
+// 	mmLoad( MOD_LIGHTMUSIC3_SHORT );
+// 	mmStart( MOD_LIGHTMUSIC3_SHORT, MM_PLAY_ONCE );
 	
 	#ifdef DEBUG
 	consoleDemoInit();
