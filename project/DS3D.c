@@ -7,14 +7,14 @@ static uint32_t next_palette_block;
 
 void DSInit3D()
 {
-	while(GXSTAT&(1<<27)); // wait till gfx engine is not busy
+	while(GXSTAT&(1<<27));
 
-	GXSTAT|=(1<<29); // Clear the FIFO
-	DSResetMatrixStack(); // Clear overflows from list memory
-	DSSwapBuffers(0); // prime the vertex/polygon buffers
-	DISP3DCNT=0; // reset the control bits
-	DSClearParams(0,0,0,31,0); // reset the rear-plane(a.k.a. clear color) to black, ID=0, and opaque
-	DSClearDepth(DS_MAX_DEPTH);// reset the depth to its max
+	GXSTAT|=(1<<29);
+	DSResetMatrixStack();
+	DSSwapBuffers(0);
+	DISP3DCNT=0;
+	DSClearParams(0,0,0,31,0);
+	DSClearDepth(DS_MAX_DEPTH);
 
 	TEXIMAGE_PARAM=0;
 	POLYGON_ATTR=0;
@@ -58,7 +58,7 @@ int32_t lookatz,int32_t upx,int32_t upy,int32_t upz)
 	forward[0]=eyex-lookatx; forward[1]=eyey-lookaty; forward[2]=eyez-lookatz;
 	up[0]=upx; up[1]=upy; up[2]=upz;
 	eye[0]=eyex; eye[1]=eyey; eye[2]=eyez;
-	
+
 	inormalize(forward);
 	icross(up,forward,side);
 	inormalize(side);
@@ -66,67 +66,11 @@ int32_t lookatz,int32_t upx,int32_t upy,int32_t upz)
 
 	MTX_MULT_4x3=side[0]; MTX_MULT_4x3=up[0]; MTX_MULT_4x3=forward[0];
 	MTX_MULT_4x3=side[1]; MTX_MULT_4x3=up[1]; MTX_MULT_4x3=forward[1];
-	MTX_MULT_4x3=side[2]; MTX_MULT_4x3=up[2]; MTX_MULT_4x3=forward[2]; 
+	MTX_MULT_4x3=side[2]; MTX_MULT_4x3=up[2]; MTX_MULT_4x3=forward[2];
 	MTX_MULT_4x3=-idot(eye,side);
 	MTX_MULT_4x3=-idot(eye,up);
 	MTX_MULT_4x3=-idot(eye,forward);
 }
-
-
-/*
-//---------------------------------------------------------------------------------
-// glColorTable establishes the location of the current palette.
-//	Roughly follows glColorTableEXT. Association of palettes with 
-//	named textures is left to the application. 
-//---------------------------------------------------------------------------------
-void glColorTable( uint8_t format, uint32_t addr ) {
-//---------------------------------------------------------------------------------
-	GFX_PAL_FORMAT = addr>>(4-(format==GL_RGB4));
-}
-                     
-
-//---------------------------------------------------------------------------------
-inline uint32_t alignVal( uint32_t val, uint32_t to ) {
-	return (val & (to-1))? (val & ~(to-1)) + to : val;
-}
-
-//---------------------------------------------------------------------------------
-int getNextPaletteSlot(u16 count, uint8_t format) {
-//---------------------------------------------------------------------------------
-	// ensure the result aligns on a palette block for this format
-	uint32_t result = alignVal(glGlob->nextPBlock, 1<<(4-(format==GL_RGB4)));
-
-	// convert count to bytes and align to next (smallest format) palette block
-	count = alignVal( count<<1, 1<<3 ); 
-
-	// ensure that end is within palette video mem
-	if( result+count > 0x10000 )   // VRAM_F - VRAM_E
-		return -1;
-
-	glGlob->nextPBlock = result+count;
-	return (int)result;
-} 
-
-//---------------------------------------------------------------------------------
-void glTexLoadPal(const u16* pal, u16 count, u32 addr) {
-//---------------------------------------------------------------------------------
-	vramSetBankE(VRAM_E_LCD);
-	swiCopy( pal, &VRAM_E[addr>>1] , count / 2 | COPY_MODE_WORD);
-	vramSetBankE(VRAM_E_TEX_PALETTE);
-}
-
-//---------------------------------------------------------------------------------
-int gluTexLoadPal(const u16* pal, u16 count, uint8_t format) {
-//---------------------------------------------------------------------------------
-	int addr = getNextPaletteSlot(count, format);
-	if( addr>=0 )
-		glTexLoadPal(pal, count, (u32) addr);
-
-	return addr;
-}
-
-
-*/
 
 
 
@@ -136,9 +80,9 @@ uint32_t DSTextureSize(uint32_t flags)
 
 	switch(flags&DS_TEX_FORMAT_MASK)
 	{
-		case DS_TEX_FORMAT_A3P5:
+		case DS_TEX_FORMAT_A3I5:
 		case DS_TEX_FORMAT_PAL8:
-		case DS_TEX_FORMAT_A5P3:
+		case DS_TEX_FORMAT_A5I3:
 			return pixels;
 
 		case DS_TEX_FORMAT_NONE:
@@ -214,32 +158,11 @@ uint32_t DSAllocAndCopyTexture(uint32_t flags,void *data)
 	return tex;
 }
 
-void DSCopyColorTexture(uint32_t texture,uint32_t color)
-{
-	uint32_t size=DSTextureSize(texture);
-	uint16_t *dest=DSTextureAddress(texture);
-
-	uint32_t vramtmp=SaveAndSetMemoryBanks(VRAMCNT_A_LCDC,VRAMCNT_B_LCDC,VRAMCNT_C_LCDC,VRAMCNT_D_LCDC);
-	for(int i=0;i<size/2;i++) *dest++=color|0x8000;
-	RestoreMemoryBanks(vramtmp);
-}
-
-uint32_t DSMakeColorTexture(uint32_t color)
-{
-	uint32_t texture=DSAllocTexture(DS_TEX_SIZE_T_8|DS_TEX_SIZE_S_8|DS_TEX_WRAP_S|DS_TEX_WRAP_T);
-	DSCopyColorTexture(texture,color);
-	return texture;
-}
-
-uint32_t DSMakeWhiteTexture()
-{
-	return DSMakeColorTexture(0x7fff);
-}
 
 
-
-void DSSetFogWithCallback(uint8_t r,uint8_t g,uint8_t b,uint8_t a,int32_t start,int32_t end,int32_t near,
-int32_t far,int32_t (*callback)(int32_t z,int32_t start,int32_t end))
+void DSSetFogWithCallback(uint8_t r,uint8_t g,uint8_t b,uint8_t a,
+int32_t start,int32_t end,int32_t near,int32_t far,
+int32_t (*callback)(int32_t z,int32_t start,int32_t end))
 {
 	uint32_t control=DISP3DCNT&~0xf00;
 
@@ -263,7 +186,9 @@ int32_t far,int32_t (*callback)(int32_t z,int32_t start,int32_t end))
 		uint32_t depth=startdepth+i*(0x400>>shift);
 		if(i==0) FOG_TABLE[i]=imul(0x7f,callback(start,start,end));
 		else if(depth>=enddepth) FOG_TABLE[i]=imul(0x7f,callback(end,start,end));
-		else FOG_TABLE[i]=imul(0x7f,callback(idiv(imul(far,near),far+imul(idiv(depth,0x7fff),near-far)),start,end));
+		else FOG_TABLE[i]=imul(0x7f,
+		callback(idiv(imul(far,near),far+imul(idiv(depth,0x7fff),near-far)),
+		start,end));
 	}
 }
 
