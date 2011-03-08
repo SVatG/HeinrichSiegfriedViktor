@@ -2,6 +2,42 @@
 
 #include <string.h>
 
+
+int MakeHSV(int h,int32_t s,int32_t v)
+{
+	h%=360;
+	if(h<0) h+=360;
+
+	int h_int=h/60;
+	int f=ifrac(IntToFixed(h)/60);
+
+	int p=imul(v,IntToFixed(1)-s);
+	int q=imul(v,IntToFixed(1)-imul(f,s));
+	int t=imul(v,IntToFixed(1)-s+imul(f,s));
+
+	int r,g,b;
+	switch(h_int)
+	{
+		case 0: r=v; g=t; b=p; break;
+		case 1: r=q; g=v; b=p; break;
+		case 2: r=p; g=v; b=t; break;
+		case 3: r=p; g=q; b=v; break;
+		case 4: r=t; g=p; b=v; break;
+		case 5: r=v; g=p; b=q; break;
+	}
+
+	if(r>=IntToFixed(1)) r=0x1f;
+	else r>>=7;
+	if(g>=IntToFixed(1)) g=0x1f;
+	else g>>=7;
+	if(b>=IntToFixed(1)) b=0x1f;
+	else b>>=7;
+
+	return MakeRGB15(r,g,b);
+}
+
+
+
 static uint32_t state1=1234567890,state2=987654321,state3=1010101010;
 
 uint32_t Random()
@@ -61,6 +97,22 @@ void RestoreMemoryBanks(uint32_t savedbanks)
 	VRAMCNT_D=(savedbanks>>24)&0xff;
 }
 
+
+
+
+
+void SetupEngineBSpriteScreen()
+{
+	int n=0;
+	for(int y=0;y<3;y++)
+	for(int x=0;x<4;x++)
+	{
+		OAM_B[4*n+0]=OBJ_0_Y(y*64)|OBJ_0_BITMAP|OBJ_0_SIZE_64x64;
+		OAM_B[4*n+1]=OBJ_1_X(x*64)|OBJ_1_SIZE_64x64;
+		OAM_B[4*n+2]=OBJ_2_CHAR(x*8+y*4*64)|OBJ_2_ALPHA(0xf);
+		n++;
+	}
+}
 
 
 
@@ -207,61 +259,4 @@ int32_t isin(int a)
 		case 2: return -table[a&1023];
 		case 3: return -table[1024-(a&1023)];
 	}
-}
-
-// Load a single 16bit image into RAM, ensuring it is visible
-void loadImage(char* path, u16* buffer, u32 size) {
-	int fd = open( path, O_RDONLY );
-	read( fd, buffer, size );
-	close( fd );
-
-	// Ensure alpha bit is set
-	for( int i = 0; i < size; i++ ) {
-		buffer[i] |= BIT(15);
-	}
-}
-
-// Load data into VRAM at a specified position by first loading
-// it into main memory and them DMA'ing it to VRAM.
-void loadVRAMIndirect(char* path, u16* vramPos, s32 size) {
-	int fd = open( path, O_RDONLY );
-	read( fd, tempImage, size );
-	close( fd );
-
- 	dmaCopy( tempImage, vramPos, size );
-}
-
-// Load a single 8bit image into VRAM at a specified position by first loading
-// it into main memory and them DMA'ing it to VRAM.
-void load8bVRAMIndirect(char* path, u16* vramPos, s32 size) {
-	int fd = open( path, O_RDONLY );
-	read( fd, tempImage, size );
-	close( fd );
-
- 	dmaCopy( (u8*)tempImage, vramPos, size );
-}
-
-
-// Load any data into main ram.
-void loadData(char* path, u8* target, u32 size) {
-	int fd = open( path, O_RDONLY | O_BINARY );
-	read( fd, target, size );
-	close( fd );
-}
-
-// Load an 64x64 image into A/B OBJ RAM, return pointer.
-u16* loadSpriteA( char* path ) {
-	u16* newSprite = oamAllocateGfx(&oamMain, SpriteSize_64x64, SpriteColorFormat_256Color);
-	load8bVRAMIndirect( path, newSprite, 64*64*2 );
-	return( newSprite );
-}
-u16* loadSpriteB( char* path ) {
-	u16* newSprite = oamAllocateGfx(&oamSub, SpriteSize_64x64, SpriteColorFormat_256Color);
-	load8bVRAMIndirect( path, newSprite, 64*64*2 );
-	return( newSprite );
-}
-u16* loadSprite32A( char* path ) {
-	u16* newSprite = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_256Color);
-	load8bVRAMIndirect( path, newSprite, 32*32*2 );
-	return( newSprite );
 }

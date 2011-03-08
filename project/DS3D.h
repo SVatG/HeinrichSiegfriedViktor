@@ -2,57 +2,56 @@
 #define __DS3D_H__
 
 #include "Utils.h"
+#include "Vector.h"
+#include "Matrix.h"
 #include "Hardware.h"
 
-//static inline int32_t itan(int a) { return tanFixed(a); }
-
-#define DSPack16(a,b) ((a&0xffff)|((b)<<16))
-#define DSPack10(a,b,c) (((a)&0x3ff)|(((b)&0x3ff)<<10)|(((c)&0x3ff)<<20))
-#define DSPackRGB5(r,g,b) ((r)|((g)<<5)|((b)<<10))
-#define DSPackRGB8(r,g,b) (((r)>>3)|(((g)>>3)<<5)|(((b)>>3)<<10))
+static inline uint32_t DSPack16(int16_t a,int16_t b) { return (a&0xffff)|(b<<16); }
+static inline uint32_t DSPack10(int16_t a,int16_t b,int16_t c) { return (a&0x3ff)|((b&0x3ff)<<10)|((c&0x3ff)<<20); }
+static inline uint16_t DSPackRGB5(int r,int g,int b) { return r|(g<<5)|(b<<10); }
+static inline uint16_t DSPackRGB8(int r,int g,int b) { return (r>>3)|((g>>3)<<5)|((b>>3)<<10); }
 
 // f32: Matrix-math 20.12 fixed-point format
-#define DSintiof32(n) ((n)<<12)
-#define DSfloatto32(n) ((int32_t)((n)*(1<<12)))
-#define DSf32toint(n) ((n)>>12)
-#define DSf32tofloat(n) (((float)(n))/(float)(1<<12))
+static inline int32_t DSinttof32(int n) { return n<<12; }
+static inline int32_t DSfloattof32(float n) { return (int32_t)(n*(float)(1<<12)); }
+static inline int DSf32toint(int32_t n) { return n>>12; }
+static inline float DSf32tofloat(int32_t n) { return ((float)n)/(float)(1<<12); }
 
 #define DSf32(n) ((int32_t)((n)*(1<<12))) // shorthand
 
 // v16: Vertex coordinate 4.12 fixed-point format
-#define DSf32tov16(n) ((int16_t)(n))
-#define DSinttov16(n) ((int16_t)((n)<<12))
-#define DSfloattov16(n) ((int16_t)((n)*(1<<12)))
-#define DSv16toint(n) ((n)>>12)
+static inline int16_t DSf32tov16(int32_t n) { return (int16_t)n; }
+static inline int16_t DSinttov16(int n) { return (int16_t)(n<<12); }
+static inline int16_t DSfloattov16(float n) { return (int16_t)(n*(float)(1<<12)); }
+static inline int DSv16toint(int16_t n) { return n>>12; }
+
+#define DSv16(n) ((int16_t)((n)*(1<<12))) // shorthand
 
 // v10: Vertex coordinate 4.6 fixed-point format
-#define DSf32tov10(n) ((int16_t)((n)>>6))
-#define DSinttov10(n) ((int16_t)((n)<<6))
-#define DSfloattov10(n) ((int16_t)((n)*(1<<6)))
-#define DSv10toint(n) ((n)>>6)
+static inline int16_t DSf32tov10(int32_t n) { return (int16_t)(n>>6); }
+static inline int16_t DSinttov10(int n) { return (int16_t)(n<<6); }
+static inline int16_t DSfloattov10(float n) { return (int16_t)(n*(float)(1<<6)); }
+static inline int DSv10toint(int16_t n) { return n>>6; }
+
+#define DSv10(n) ((int16_t)((n)*(1<<6))) // shorthand
 
 // t16: Texture coordinate 12.4 fixed-point format
-#define DSf32tot16(n) ((int16_t)(n>>8))
-#define DSinttot16(n) ((int16_t)((n)<<4))
-#define DSfloattot16(n) ((int16_t)((n)*(1 << 4)))
-#define DSt16toint(n) ((n)>>4)
+static inline int16_t DSf32tot16(int32_t n) { return (int16_t)(n>>8); }
+static inline int16_t DSinttot16(int n) { return (int16_t)(n<<4); }
+static inline int16_t DSfloattot16(float n) { return (int16_t)(n*(float)(1<<4)); }
+static inline int DSt16toint(int16_t n) { return n>>4; }
+
+#define DSt16(n) ((int16_t)((n)*(1<<4))) // shorthand
 
 // n10: Normal and light direction 1.9 fixed-point format
-#define DSf32ton10(n) ((int16_t)((n)>>3))
-#define DSintton10(n) ((int16_t)((n)<<9))
-#define DSfloatton10(n) (((n)>.998)?0x1FF:((int16_t)((n)*(1<<9))))
-#define DSn10toint(n) ((n)>>9)
+static inline int16_t DSf32ton10(int32_t n) { return (n>0xfff)?0x1ff:(int16_t)(n>>3); }
+static inline int16_t DSfloatton10(float n) { return (n>0.998)?0x1ff:((int16_t)(n*(float)(1<<9))); }
+static inline int DSn10toint(int16_t n) { return n>>9; }
 
 // d15: Depth buffer 12.3 fixed-point format
-#define DSinttod15(n) ((int16_t)((n)<<3))
-#define DSfloattod15(n) ((uint16_t)((n)*(1<<3)))
+static inline int16_t DSinttod15(int n) { return (int16_t)(n<<3); }
+static inline int16_t DSfloattod15(float n) { return (int16_t)(n*(float)(1<<3)); }
 #define DS_MAX_DEPTH 0x7fff
-
-typedef struct { int32_t m[9]; } Matrix3x3;
-typedef struct { int32_t m[16]; } Matrix4x4;
-typedef struct { int32_t m[12]; } Matrix4x3;
-typedef struct { int32_t x,y,z; } Vector;
-
 
 
 //http://nocash.emubase.de/gbatek.htm#ds3ddisplaycontrol
@@ -121,12 +120,12 @@ typedef struct { int32_t x,y,z; } Vector;
 #define DS_TEX_SIZE_T_512 (6<<23)
 #define DS_TEX_SIZE_T_1024 (7<<23)
 #define DS_TEX_FORMAT_NONE (0<<26)
-#define DS_TEX_FORMAT_A3P5 (1<<26)
+#define DS_TEX_FORMAT_A3I5 (1<<26)
 #define DS_TEX_FORMAT_PAL2 (2<<26)
 #define DS_TEX_FORMAT_PAL4 (3<<26)
 #define DS_TEX_FORMAT_PAL8 (4<<26)
 #define DS_TEX_FORMAT_COMPRESSED (5<<26)
-#define DS_TEX_FORMAT_A5P3 (6<<26)
+#define DS_TEX_FORMAT_A5I3 (6<<26)
 #define DS_TEX_FORMAT_RGB (7<<26)
 #define DS_TEX_FORMAT_MASK (7<<26)
 #define DS_TEX_COLOR0_TRANS 0x20000000
@@ -145,8 +144,10 @@ typedef struct { int32_t x,y,z; } Vector;
 // http://nocash.emubase.de/gbatek.htm#ds3dmatrixloadmultiply
 #define DS_PROJECTION 0
 #define DS_POSITION 1
-#define DS_MODELVIEW 2
+#define DS_POSITION_AND_VECTOR 2
 #define DS_TEXTURE 3
+
+#define DS_MODELVIEW DS_POSITION_AND_VECTOR
 
 /*#define FIFO_COMMAND_PACK(c1,c2,c3,c4) (((c4)<<24)|((c3)<<16)|((c2)<<8)|(c1))
 
@@ -194,12 +195,9 @@ void DSFreeAllTextures();
 void DSCopyTexture(uint32_t texture,void *data);
 uint32_t DSAllocAndCopyTexture(uint32_t flags,void *data);
 
-void DSCopyColorTexture(uint32_t texture,uint32_t color);
-uint32_t DSMakeColorTexture(uint32_t color);
-uint32_t DSMakeWhiteTexture();
-
-void DSSetFogWithCallback(uint8_t r,uint8_t g,uint8_t b,uint8_t a,int32_t start,int32_t end,int32_t near,
-int32_t far,int32_t (*callback)(int32_t z,int32_t start,int32_t end));
+void DSSetFogWithCallback(uint8_t r,uint8_t g,uint8_t b,uint8_t a,
+int32_t start,int32_t end,int32_t near,int32_t far,
+int32_t (*callback)(int32_t z,int32_t start,int32_t end));
 void DSSetFogLinearf32(uint8_t r,uint8_t g,uint8_t b,uint8_t a,int32_t start,int32_t end,int32_t near,int32_t far);
 void DSSetFogLinearf(uint8_t r,uint8_t g,uint8_t b,uint8_t a,float start,float end,float near,float far);
 
@@ -239,28 +237,28 @@ static inline void DSBegin(int mode) { BEGIN_VTXS=mode; }
 static inline void DSEnd() { END_VTXS=0; }
 
 static inline void DSVertex(uint32_t xy,uint32_t z) { VTX_16=xy; VTX_16=z; }
-static inline void DSVertex3v16(uint16_t x,uint16_t y,uint16_t z) { DSVertex(DSPack16(x,y),z); }
+static inline void DSVertex3v16(int16_t x,int16_t y,int16_t z) { DSVertex(DSPack16(x,y),z); }
 static inline void DSVertex3f(float x,float y,float z) { DSVertex3v16(DSfloattov16(x),DSfloattov16(y),DSfloattov16(z)); }
-static inline void DSVertex3v(const Vector v) { DSVertex3v16(v.x,v.y,v.z); }
+static inline void DSVertex3v(const vec3_t v) { DSVertex3v16(v.x,v.y,v.z); }
 
 static inline void DSVertexXY(uint32_t xy) { VTX_XY=xy; }
-static inline void DSVertexXYv16(uint16_t x,uint16_t y) { DSVertexXY(DSPack16(x,y)); }
+static inline void DSVertexXYv16(int16_t x,int16_t y) { DSVertexXY(DSPack16(x,y)); }
 static inline void DSVertexXYf(float x,float y) { DSVertexXYv16(DSfloattov16(x),DSfloattov16(y)); }
 static inline void DSVertex2f(float x,float y) { DSVertexXYf(x,y); }
 
 static inline void DSVertexXZ(uint32_t xz) { VTX_XZ=xz; }
-static inline void DSVertexXZv16(uint16_t x,uint16_t z) { DSVertexXZ(DSPack16(x,z)); }
+static inline void DSVertexXZv16(int16_t x,int16_t z) { DSVertexXZ(DSPack16(x,z)); }
 static inline void DSVertexXZf(float x,float z) { DSVertexXZv16(DSfloattov16(x),DSfloattov16(z)); }
 
 static inline void DSVertexYZ(uint32_t yz) { VTX_YZ=yz; }
-static inline void DSVertexYZv16(uint16_t y,uint16_t z) { DSVertexYZ(DSPack16(y,z)); }
+static inline void DSVertexYZv16(int16_t y,int16_t z) { DSVertexYZ(DSPack16(y,z)); }
 static inline void DSVertexYZf(float y,float z) { DSVertexYZv16(DSfloattov16(y),DSfloattov16(z)); }
 
 static inline void DSVertex10(uint32_t xyz) { VTX_10=xyz; }
 static inline void DSVertex103f(float x,float y,float z) { DSVertex10(DSPack10(DSfloattov16(x),DSfloattov16(y),DSfloattov16(z))); }
 
 static inline void DSVertexDiff(uint32_t xyz) { VTX_DIFF=xyz; }
-static inline void DSVertexDiff3n10(uint16_t x,uint16_t y,uint16_t z) { DSVertexDiff(DSPack10(x,y,z)); }
+static inline void DSVertexDiff3n10(int16_t x,int16_t y,int16_t z) { DSVertexDiff(DSPack10(x,y,z)); }
 static inline void DSVertexDiff3f(float x,float y,float z) { DSVertexDiff3n10(DSfloatton10(x*8),DSfloatton10(y*8),DSfloatton10(z*8)); }
 
 // http://nocash.emubase.de/gbatek.htm#ds3dpolygonattributes
@@ -291,44 +289,11 @@ static inline void DSStoreMatrix(int index) { MTX_STORE=index; }
 static inline void DSMatrixMode(int mode) { MTX_MODE=mode; }
 static inline void DSLoadIdentity() { MTX_IDENTITY=0; }
 
-static inline void DSLoadMatrix4x4(const Matrix4x4 m)
-{
-	MTX_LOAD_4x4=m.m[0]; MTX_LOAD_4x4=m.m[1]; MTX_LOAD_4x4=m.m[2]; MTX_LOAD_4x4=m.m[3];
-	MTX_LOAD_4x4=m.m[4]; MTX_LOAD_4x4=m.m[5]; MTX_LOAD_4x4=m.m[6]; MTX_LOAD_4x4=m.m[7];
-	MTX_LOAD_4x4=m.m[8]; MTX_LOAD_4x4=m.m[9]; MTX_LOAD_4x4=m.m[10]; MTX_LOAD_4x4=m.m[11];
-	MTX_LOAD_4x4=m.m[12]; MTX_LOAD_4x4=m.m[13]; MTX_LOAD_4x4=m.m[14]; MTX_LOAD_4x4=m.m[15];
-}
-
-static inline void DSLoadMatrix4x3(const Matrix4x3 m)
-{
-	MTX_LOAD_4x3=m.m[0]; MTX_LOAD_4x3=m.m[1]; MTX_LOAD_4x3=m.m[2];
-	MTX_LOAD_4x3=m.m[3]; MTX_LOAD_4x3=m.m[4]; MTX_LOAD_4x3=m.m[5];
-	MTX_LOAD_4x3=m.m[6]; MTX_LOAD_4x3=m.m[7]; MTX_LOAD_4x3=m.m[8];
-	MTX_LOAD_4x3=m.m[9]; MTX_LOAD_4x3=m.m[10]; MTX_LOAD_4x3=m.m[11];
-}
-
-static inline void DSMultMatrix4x4(const Matrix4x4 m)
-{
-	MTX_MULT_4x4=m.m[0]; MTX_MULT_4x4=m.m[1]; MTX_MULT_4x4=m.m[2]; MTX_MULT_4x4=m.m[3];
-	MTX_MULT_4x4=m.m[4]; MTX_MULT_4x4=m.m[5]; MTX_MULT_4x4=m.m[6]; MTX_MULT_4x4=m.m[7];
-	MTX_MULT_4x4=m.m[8]; MTX_MULT_4x4=m.m[9]; MTX_MULT_4x4=m.m[10]; MTX_MULT_4x4=m.m[11];
-	MTX_MULT_4x4=m.m[12]; MTX_MULT_4x4=m.m[13]; MTX_MULT_4x4=m.m[14]; MTX_MULT_4x4=m.m[15];
-}
-
-static inline void DSMULTMatrix4x3(const Matrix4x3 m)
-{
-	MTX_MULT_4x3=m.m[0]; MTX_MULT_4x3=m.m[1]; MTX_MULT_4x3=m.m[2];
-	MTX_MULT_4x3=m.m[3]; MTX_MULT_4x3=m.m[4]; MTX_MULT_4x3=m.m[5];
-	MTX_MULT_4x3=m.m[6]; MTX_MULT_4x3=m.m[7]; MTX_MULT_4x3=m.m[8];
-	MTX_MULT_4x3=m.m[9]; MTX_MULT_4x3=m.m[10]; MTX_MULT_4x3=m.m[11];
-}
-
-static inline void DSMultMatrix3x3(const Matrix3x3 m)
-{
-	MTX_MULT_3x3=m.m[0]; MTX_MULT_3x3=m.m[1]; MTX_MULT_3x3=m.m[2];
-	MTX_MULT_3x3=m.m[3]; MTX_MULT_3x3=m.m[4]; MTX_MULT_3x3=m.m[5];
-	MTX_MULT_3x3=m.m[6]; MTX_MULT_3x3=m.m[7]; MTX_MULT_3x3=m.m[8];
-}
+static inline void DSLoadMatrix4x3(const mat4x3_t m) { for(int i=0;i<12;i++) MTX_LOAD_4x3=m.m[i]; }
+static inline void DSLoadMatrix4x4(const mat4x4_t m) { for(int i=0;i<16;i++) MTX_LOAD_4x4=m.m[i]; }
+static inline void DSMultMatrix3x3(const mat3x3_t m) { for(int i=0;i<9;i++) MTX_MULT_3x3=m.m[i]; }
+static inline void DSMultMatrix4x3(const mat4x3_t m) { for(int i=0;i<12;i++) MTX_MULT_4x3=m.m[i]; }
+static inline void DSMultMatrix4x4(const mat4x4_t m) { for(int i=0;i<16;i++) MTX_MULT_4x4=m.m[i]; }
 
 static inline void DSScalef32(int32_t x,int32_t y,int32_t z)
 {
@@ -336,7 +301,7 @@ static inline void DSScalef32(int32_t x,int32_t y,int32_t z)
 	MTX_SCALE=y;
 	MTX_SCALE=z;
 }
-static inline void DSScalev(const Vector v) { DSScalef32(v.x,v.y,v.z); }
+static inline void DSScalev(const vec3_t v) { DSScalef32(v.x,v.y,v.z); }
 static inline void DSScalef(float x,float y,float z) { DSScalef32(DSf32(x),DSf32(y),DSf32(z)); }
 static inline void DSScaleUniformf32(int32_t factor) { DSScalef32(factor,factor,factor); }
 static inline void DSScaleUniformf(float factor) { DSScaleUniformf32(DSf32(factor)); }
@@ -347,14 +312,14 @@ static inline void DSTranslatef32(int32_t x,int32_t y,int32_t z)
 	MTX_TRANS=y;
 	MTX_TRANS=z;
 }
-static inline void DSTranslatev(const Vector v) { DSTranslatef32(v.x,v.y,v.z); }
+static inline void DSTranslatev(const vec3_t v) { DSTranslatef32(v.x,v.y,v.z); }
 static inline void DSTranslatef(float x,float y,float z) { DSTranslatef32(DSf32(x),DSf32(y),DSf32(z)); }
 
 static inline void DSRotateXi(int angle)
 {
 	int32_t sine=isin(angle);
 	int32_t cosine=icos(angle);
-	
+
 	MTX_MULT_3x3=DSf32(1); MTX_MULT_3x3=0; MTX_MULT_3x3=0;
 	MTX_MULT_3x3=0; MTX_MULT_3x3=cosine; MTX_MULT_3x3=sine;
 	MTX_MULT_3x3=0; MTX_MULT_3x3=-sine; MTX_MULT_3x3=cosine;
@@ -364,7 +329,7 @@ static inline void DSRotateYi(int angle)
 {
 	int32_t sine=isin(angle);
 	int32_t cosine=icos(angle);
-	
+
 	MTX_MULT_3x3=cosine; MTX_MULT_3x3=0; MTX_MULT_3x3=-sine;
 	MTX_MULT_3x3=0; MTX_MULT_3x3=DSf32(1); MTX_MULT_3x3=0;
 	MTX_MULT_3x3=sine; MTX_MULT_3x3=0; MTX_MULT_3x3=cosine;
@@ -374,7 +339,7 @@ static inline void DSRotateZi(int angle)
 {
 	int32_t sine=isin(angle);
 	int32_t cosine=icos(angle);
-	
+
 	MTX_MULT_3x3=cosine; MTX_MULT_3x3=sine; MTX_MULT_3x3=0;
 	MTX_MULT_3x3=-sine; MTX_MULT_3x3=cosine; MTX_MULT_3x3=0;
 	MTX_MULT_3x3=0; MTX_MULT_3x3=0; MTX_MULT_3x3=DSf32(1);
@@ -392,9 +357,9 @@ static inline void DSOrthof32(int32_t left,int32_t right,int32_t bottom,int32_t 
 	MTX_MULT_4x4=0; MTX_MULT_4x4=idiv(DSf32(2),top-bottom); MTX_MULT_4x4=0; MTX_MULT_4x4=0;
 	MTX_MULT_4x4=0; MTX_MULT_4x4=0; MTX_MULT_4x4=idiv(DSf32(-2),far-near); MTX_MULT_4x4=0;
 
-	MTX_MULT_4x4=-idiv(right+left,right-left);  
-	MTX_MULT_4x4=-idiv(top+bottom,top-bottom);  
-	MTX_MULT_4x4=-idiv(far+near,far-near);  
+	MTX_MULT_4x4=-idiv(right+left,right-left);
+	MTX_MULT_4x4=-idiv(top+bottom,top-bottom);
+	MTX_MULT_4x4=-idiv(far+near,far-near);
 	MTX_MULT_4x4=DSf32(1);
 }
 static inline void DSOrtho(float left,float right,float bottom,float top,float near, float far)
@@ -514,10 +479,10 @@ void DC_FlushRange(const void *base,uint32_t size); // kludge
 static inline void DSCallList(const uint32_t *list)
 {
 	uint32_t count=*list++;
-	
+
 	// flush the area that we are going to DMA
 	DC_FlushRange(list,count*4);
-	
+
 	// Don't start DMAing while anything else is being DMAed
 	// because FIFO DMA is touchy as hell
 	while((DMA0CNT&DMAxCNT_ENABLE)||(DMA1CNT&DMAxCNT_ENABLE)||
@@ -535,43 +500,44 @@ static inline void DSCallList(const uint32_t *list)
 
 
 
+static inline mat4x4_t DSGetPositionMatrix()
+{
+	mat4x4_t res;
 
-/*! \brief Grabs fixed format of state variables<BR>
-OpenGL's modelview matrix is handled on the DS with two matrices. The combination of the DS's position matrix and directional vector matrix hold the data that is in OpenGL's one modelview matrix. (a.k.a. modelview = postion and vector)<BR>
-<A HREF="http://nocash.emubase.de/gbatek.htm#ds3diomap">http://nocash.emubase.de/gbatek.htm#ds3diomap</A>
-\param param The state variable to retrieve
-\param f pointer with room to hold the requested data */
-/*static inline void glGetFixed(const GL_GET_ENUM param, int32_t* f) {
-	int i;
-	switch (param) {
-		case GL_GET_MATRIX_VECTOR:
-			while(GFX_BUSY); // wait until the graphics engine has stopped to read matrixes
-			for(i = 0; i < 9; i++) f[i] = MATRIX_READ_VECTOR[i];
-			break;
-		case GL_GET_MATRIX_CLIP:
-			while(GFX_BUSY); // wait until the graphics engine has stopped to read matrixes
-			for(i = 0; i < 16; i++) f[i] = MATRIX_READ_CLIP[i];
-			break;
-		case GL_GET_MATRIX_PROJECTION:
-			glMatrixMode(GL_POSITION);
-			glPushMatrix(); // save the current state of the position matrix
-			glLoadIdentity(); // load an identity matrix into the position matrix so that the clip matrix = projection matrix
-			while(GFX_BUSY); // wait until the graphics engine has stopped to read matrixes
-				for(i = 0; i < 16; i++) f[i] = MATRIX_READ_CLIP[i]; // read out the projection matrix
-			glPopMatrix(1); // restore the position matrix
-			break;
-		case GL_GET_MATRIX_POSITION:
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix(); // save the current state of the projection matrix
-			glLoadIdentity(); // load a identity matrix into the projection matrix so that the clip matrix = position matrix
-			while(GFX_BUSY); // wait until the graphics engine has stopped to read matrixes
-				for(i = 0; i < 16; i++) f[i] = MATRIX_READ_CLIP[i]; // read out the position matrix
-			glPopMatrix(1); // restore the projection matrix
-			break;
-		default: 
-			break;
-	}
-}*/
+	DSMatrixMode(DS_PROJECTION);
+	DSPushMatrix();
+	DSLoadIdentity();
+	while(GXSTAT&(1<<27));
+	for(int i=0;i<16;i++) res.m[i]=CLIPMTX_RESULT[i];
+	DSPopMatrix(1);
+
+	return res;
+}
+
+static inline mat4x4_t DSGetProjectionMatrix()
+{
+	mat4x4_t res;
+
+	DSMatrixMode(DS_POSITION);
+	DSPushMatrix();
+	DSLoadIdentity();
+	while(GXSTAT&(1<<27));
+	for(int i=0;i<16;i++) res.m[i]=CLIPMTX_RESULT[i];
+	DSPopMatrix(1);
+
+	return res;
+}
+
+static inline mat3x3_t DSGetVectorMatrix()
+{
+	mat3x3_t res;
+
+	while(GXSTAT&(1<<27));
+	for(int i=0;i<9;i++) res.m[i]=VECMTX_RESULT[i];
+
+	return res;
+}
+
 
 /*! \brief Grabs integer state variables from openGL
 \param param The state variable to retrieve
