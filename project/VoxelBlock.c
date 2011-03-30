@@ -141,6 +141,7 @@ static void DrawFace(int pattern,int fx,int fy,int fz,int dxdu,int dydu,int dzdu
 void DrawVoxelBlock(VoxelBlock *self)
 {
 	DSMatrixMode(DS_POSITION);
+	DSStoreMatrix(0);
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
 
 	mat4x4_t posmtx=DSGetPositionMatrix();
@@ -211,8 +212,9 @@ void DrawVoxelBlock(VoxelBlock *self)
 
 		voxel++;
 	}
-
 	DSEnd();
+	DSMatrixMode(DS_POSITION);
+	DSRestoreMatrix(0);
 }
 
 static inline float TransformRange(float val,float oldlow,float oldhigh,float newlow,float newhigh)
