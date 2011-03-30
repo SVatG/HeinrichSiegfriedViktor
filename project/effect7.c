@@ -1,4 +1,6 @@
+#include <nds.h>
 #include "Utils.h"
+#include "RainbowTable.h"
 
 uint16_t hstate = 0xDEC0;
 uint16_t vstate = 0xC0DE;
@@ -52,10 +54,6 @@ void effect7_init() {
 	BG2X_A = 0;
 	BG2Y_A = 0;
 
-	load8bVRAMIndirect( "nitro:/gfx/credits.img.bin",VRAM_B,256*192);
-	loadVRAMIndirect( "nitro:/gfx/credits.pal.bin", PALRAM_B,256*2);
-	loadImage( "nitro:/gfx/credits_a.img.bin",VRAM_A_OFFS_0K+0x10000,256*192*2);
-
 	u16* screen = VRAM_A_OFFS_0K+0x10000;
 	for( int i = 0; i < 256*192;i++ ) {
 		if( screen[i] == (RGB15(0,31,0)|BIT(15))) {
@@ -82,115 +80,51 @@ void effect7_init() {
 		int c=(hnext())&0x1f;
 		PALRAM_A[i]=0x8000|(c<<10)|(c<<5)|c;
 	}
+
+	VRAMCNT_A=VRAMCNT_A_BG_VRAM_A;
+	VRAMCNT_C=VRAMCNT_C_BG_VRAM_B;
+
+	DISPCNT_A=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_BG0_ON;
+	BG0CNT_A=BGxCNT_TILE_BASE_0K|BGxCNT_CHAR_BASE_64K
+			|BGxCNT_TEXT_256_COLOURS|BGxCNT_TEXT_SIZE_256x256;
+
+	DISPCNT_B=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_BG0_ON;
+	BG0CNT_B=BGxCNT_TILE_BASE_0K|BGxCNT_CHAR_BASE_64K
+			|BGxCNT_TEXT_256_COLOURS|BGxCNT_TEXT_SIZE_256x256;
+
+	for(int i=0;i<126*1024/2;i++)
+	{
+		VRAM_A_OFFS_64K[i]=hnext();
+		VRAM_B_OFFS_64K[i]=hnext();
+		vnext() & 0x01 ? hnext() : vnext();
+	}
+
+	for(int i=0;i<32*24;i++)
+	{
+		VRAM_A_OFFS_0K[i]=vnext()&0xc3ff;
+		VRAM_B_OFFS_0K[i]=hnext()&0xc3ff;
+	}
+
+	for(int i=0;i<256;i++) {
+		int c=(hnext())&0x1f;
+		PALRAM_A[i]=PALRAM_B[256-i]=0x8000|(c<<10)|(c<<5)|c;
+	}
+
 }
 
 u8 effect7_update( u32 t ) {
-	if( t == 360 ) {
-		loadImage( "nitro:/gfx/credits_b.img.bin",VRAM_A_OFFS_0K+0x10000,256*192*2);
-
-		u16* screen = VRAM_A_OFFS_0K+0x10000;
-		for( int i = 0; i < 256*192;i++ ) {
-			if( screen[i] == (RGB15(0,31,0)|BIT(15))) {
-				screen[i] = (RGB15(0,31,0)|~BIT(15));
-			}
-		}
-	}
-	if( t == 690 ) {
-		VRAMCNT_A=VRAMCNT_A_BG_VRAM_A;
-		VRAMCNT_C=VRAMCNT_C_BG_VRAM_B;
-
-		DISPCNT_A=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_BG0_ON;
-		BG0CNT_A=BGxCNT_TILE_BASE_0K|BGxCNT_CHAR_BASE_64K
-				|BGxCNT_TEXT_256_COLOURS|BGxCNT_TEXT_SIZE_256x256;
-
-		DISPCNT_B=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_BG0_ON;
-		BG0CNT_B=BGxCNT_TILE_BASE_0K|BGxCNT_CHAR_BASE_64K
-				|BGxCNT_TEXT_256_COLOURS|BGxCNT_TEXT_SIZE_256x256;
-
-		for(int i=0;i<126*1024/2;i++)
-		{
-			VRAM_A_OFFS_64K[i]=hnext();
-			VRAM_B_OFFS_64K[i]=hnext();
-			vnext() & 0x01 ? hnext() : vnext();
-		}
-
-		for(int i=0;i<32*24;i++)
-		{
-			VRAM_A_OFFS_0K[i]=vnext()&0xc3ff;
-			VRAM_B_OFFS_0K[i]=hnext()&0xc3ff;
-		}
-
-		for(int i=0;i<256;i++)
-		{
-			int c=(hnext())&0x1f;
-			PALRAM_A[i]=PALRAM_B[256-i]=0x8000|(c<<10)|(c<<5)|c;
-		}
-
-		int round = 0;
-		touchPosition touch;
-		for(;;)
-		{
-			for(int i=round;i<126*1024/2;i+=16)
-			{
-				VRAM_A_OFFS_64K[i]=VRAM_B_OFFS_64K[i]=hnext()^vnext();
-			}
-			round++;
-			round = round & 0xF;
-
-			for(int i=0;i<256;i++)
-			{
-				int c=(hnext())&0x1f;
-				PALRAM_A[i]=PALRAM_B[256-i]=0x8000|(c<<10)|(c<<5)|c;
-			}
-		}
-	}
-
-	int round = t*2;
-	for(int i=round;i<256*128;i+=16)
-	{
+	int round = 0;
+	for(int i=round;i<126*1024/2;i+=16) {
 		VRAM_A_OFFS_64K[i]=VRAM_B_OFFS_64K[i]=hnext()^vnext();
 	}
 	round++;
 	round = round & 0xF;
 
-	for(int i=0;i<256;i++)
-	{
+	for(int i=0;i<256;i++) {
 		int c=(hnext())&0x1f;
-		PALRAM_A[i]=0x8000|(c<<10)|(c<<5)|c;
+			PALRAM_A[i]=PALRAM_B[((256-i)+c/3)%256]=(0x8000|(c<<10)|(c<<5)|c)^rainbowTable[t%255];
 	}
 
-	if( t < 360 ) {
-		if( t % 22 == 0 || t % 23 == 0 ) {
-			u16* master_bright_sub = (u16*)(0x400106C);
-			memset( master_bright_sub, (1<<6) | 8, 2 );
-		}
-		else {
-			u16* master_bright_sub = (u16*)(0x400106C);
-			memset( master_bright_sub, (1<<6) | 0, 2 );
-		}
-	}
-	else {
-		u16* master_bright_sub = (u16*)(0x400106C);
-		memset( master_bright_sub, (1<<6) | 0, 2 );
-	}
-
-	if( t >= 344 && t <= 360 ) {
-		u16* master_bright = (u16*)(0x400006C);
-		memset( master_bright, (1<<7) | (t-344), 2 );
-	}
-
-	if( t >= 360 && t <= 374 ) {
-		u16* master_bright = (u16*)(0x400006C);
-		memset( master_bright, (1<<7) | (374-t), 2 );
-	}
-
-	if( t <= 16 ) {
-		u16* master_bright = (u16*)(0x400006C);
-		memset( master_bright, (1<<6) | (16-t), 2 );
-		u16* master_bright_sub = (u16*)(0x400106C);
-		memset( master_bright_sub, (1<<6) | (16-t), 2 );
-	}
-	
 	return( 0 );
 }
 

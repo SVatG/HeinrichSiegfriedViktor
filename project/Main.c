@@ -38,10 +38,12 @@ int main()
 	#endif
 
 	// Main loop
-	InitTruchet();
+	effect7_init();
 
+	int t = 0;
 	while( 1 ) {
-		Truchet();
+		t++;
+		effect7_update(t);
 		
 		// 60fps, or less if in DOUBLETHREEDEE MODE, or doing fancy
 		// things like that, the effect in question should know.
