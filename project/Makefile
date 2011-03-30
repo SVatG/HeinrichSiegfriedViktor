@@ -3,7 +3,8 @@ NAME = rainbows
 
 # Object files, for the ARM9 binary and the ARM7 binary
 OBJS = Main.o Truchet.o \
-       DS3D.o Utils.o Vector.o Matrix.o Quaternion.o nitrofs.o 
+       DS3D.o Utils.o Vector.o Matrix.o Quaternion.o nitrofs.o effect7.o \
+			 RainbowTable.o
 
 OBJS7 = Main.arm7.o
 
