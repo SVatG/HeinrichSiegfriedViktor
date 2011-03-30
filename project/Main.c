@@ -12,7 +12,7 @@
 #include "nitrofs.h"
 
 // Effects!
-//#include "effects.h"
+#include "effects.h"
 #include "Truchet.h"
 
 // Sound!
@@ -38,12 +38,11 @@ int main()
 	#endif
 
 	// Main loop
-	effect7_init();
+	InitTruchet();
 
 	int t = 0;
 	while( 1 ) {
-		t++;
-		effect7_update(t);
+		Truchet();
 		
 		// 60fps, or less if in DOUBLETHREEDEE MODE, or doing fancy
 		// things like that, the effect in question should know.

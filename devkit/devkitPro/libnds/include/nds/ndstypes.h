@@ -169,7 +169,7 @@ typedef volatile s64          vs64;
 /*!
 	\brief C++ compatible bool for C
 */
-typedef enum { false, true } bool;
+#include <stdbool.h>
 #endif
 
 

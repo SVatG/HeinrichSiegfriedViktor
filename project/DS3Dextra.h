@@ -5,7 +5,7 @@
 #include "Hardware.h"
 #include "DS3D.h"
 
-static inline int32_t imul3(int32_t a,int32_t b,int32_t c) { return imul(imul(a,b),c); }
+// static inline int32_t imul3(int32_t a,int32_t b,int32_t c) { return imul(imul(a,b),c); }
 
 /*
 static inline uint32_t DSPack16(int16_t a,int16_t b) { return (a&0xffff)|(b<<16); }
@@ -14,7 +14,8 @@ static inline uint16_t DSPackRGB5(int r,int g,int b) { return r|(g<<5)|(b<<10); 
 static inline uint16_t DSPackRGB8(int r,int g,int b) { return (r>>3)|((g>>3)<<5)|((b>>3)<<10); }
 
 // f32: Matrix-math 20.12 fixed-point format
-*/static inline int32_t DSinttof32(int n) { return n<<12; }
+*/
+// static inline int32_t DSinttof32(int n) { return n<<12; }
 /*
 static inline int32_t DSfloattof32(float n) { return (int32_t)(n*(float)(1<<12)); }
 static inline int DSf32toint(int32_t n) { return n>>12; }
