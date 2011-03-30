@@ -1,13 +1,16 @@
 #include "Utils.h"
 #include "DS3D.h"
 #include "VoxelBlock.h"
+#include "Hardware.h"
+#include "Loader.h"
+#include "RainbowTable.h"
 
 VoxelBlock block;
 
 void effect6_init() {
-	u16* master_bright = (u16*)(0x400006C);
+	uint16_t* master_bright = (uint16_t*)(0x400006C);
 	memset( master_bright, (1<<6) | (16), 2 );
-	u16* master_bright_sub = (u16*)(0x400106C);
+	uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
 	memset( master_bright_sub, (1<<6) | (16), 2 );
 		
 	DISPCNT_A=DISPCNT_MODE_4|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
@@ -69,7 +72,7 @@ void effect6_init() {
 	DSLoadIdentity();
 	DSPerspective(65,256.0/192.0,1,1024);
 
-	InitVoxelBlock(&block,8,8,32,NULL);
+	InitVoxelBlock(&block,18,18,128,NULL);
 /*
 	for(int x=0;x<6;x++)
 	for(int y=0;y<6;y++)
@@ -81,56 +84,33 @@ void effect6_init() {
 	RefreshVoxelBlock(&block);*/
 }
 
-int prob=12;
+int prob=14;
 
-u8 effect6_update( u32 t ) {
-	int dx=icos(t*8)>>4;
-	int dy=isin(t*8)>>4;
-
-	BG3PA_B=dx;
-	BG3PB_B=dy;
-	BG3PC_B=-dy;
-	BG3PD_B=dx;
-	BG3X_B=-128*dx-92*dy+(128<<8);
-	BG3Y_B=+128*dy-92*dx+(92<<8);
+uint8_t ri = 0;
+uint8_t effect6_update( uint32_t t ) {
 
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
 
-	if((t&7)==0)
-	{
-		ScrollVoxelBlockByZ(&block);
-
-		prob=10*(isin(t*16)+DSf32(1))+DSf32(2);
-		prob>>=12;
-
+		
+		if(t%4==0) {
+			ScrollVoxelBlockByZ(&block);
+		}
 /*		prob+=Random()%5-2;
 		if(prob<3) prob=3;
 		if(prob>15) prob=15;*/
 
-		for(int x=0;x<8;x++)
-		for(int y=0;y<8;y++)
-		{
-			if(Random()%prob==0)
-			{
-				if(Random()%10==0)
-				SetVoxelAt(&block,x,y,0,MakeVoxel(27,7,15));
-				else
-				SetVoxelAt(&block,x,y,0,MakeVoxel(31,31,31));
-			}
-			else
-			SetVoxelAt(&block,x,y,0,0);
-		}
-
+		SetVoxelAt(&block,(icos((t-20)<<6)>>9)+8,(isin((t-20)<<6)>>9)+8,0,0);
+		SetVoxelAt(&block,(icos(t<<6)>>9)+8,(isin(t<<6)>>9)+8,0,/*MakeVoxel(31,31,31)*/rainbowTable[++ri]|0x8000);
+		
 		RefreshVoxelBlock(&block);
-	}
 
-	DSTranslatef(0,0,-64);
-	DSRotateYi(512);
-	DSRotateXi(256+64);
-	DSRotateZi(256);
+	DSTranslatef(0,0,-80);
+// 	DSRotateYi(512);
+// 	DSRotateXi(256+64);
+	DSRotateZi(-t<<4);
 	DSScalef(8,8,8);
-	DSTranslatef32(DSf32(-1),DSf32(-2),((t&7)<<9)-DSf32(10));
+	DSTranslatef32(DSf32(-1),DSf32(-2),((t&3)<<10)-DSf32(10));
 	//DSRotateXi(100);
 
 	DrawVoxelBlock(&block);
@@ -138,22 +118,22 @@ u8 effect6_update( u32 t ) {
 	DSSwapBuffers(0);
 
 	if( t <= 16 ) {
-		u16* master_bright = (u16*)(0x400006C);
+		uint16_t* master_bright = (uint16_t*)(0x400006C);
 		memset( master_bright, (1<<6) | (16-t), 2 );
-		u16* master_bright_sub = (u16*)(0x400106C);
+		uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
 		memset( master_bright_sub, (1<<6) | (16-t), 2 );
 	}
-
-	if( t >= 684 ) {
-		u16* master_bright = (u16*)(0x400006C);
-		memset( master_bright, (1<<6) | (t-684), 2 );
-		u16* master_bright_sub = (u16*)(0x400106C);
-		memset( master_bright_sub, (1<<6) | (t-684), 2 );
-	}
-	
-	if( t == 700 ) {
-		return ( 1 );
-	}
+// 
+// 	if( t >= 684 ) {
+// 		uint16_t* master_bright = (uint16_t*)(0x400006C);
+// 		memset( master_bright, (1<<6) | (t-684), 2 );
+// 		uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
+// 		memset( master_bright_sub, (1<<6) | (t-684), 2 );
+// 	}
+// 	
+// 	if( t == 700 ) {
+// 		return ( 1 );
+// 	}
 	
 	return 0;
 }
