@@ -8,7 +8,7 @@
 // Cap/flip
 void capflip() {
 	int capsrc;
-	capsrc=DISPCAPCNT_SRC_A_SCREEN;
+	capsrc=DISPCAPCNT_SRC_A_3D;
 	VRAMCNT_A = VRAMCNT_A_LCDC;
 	VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
 	DISPCAPCNT=DISPCAPCNT_WRITE_VRAM_A|DISPCAPCNT_SIZE_256x192
@@ -22,7 +22,7 @@ void capflip() {
 
 VoxelBlock block;
 VoxelBlock block2;
-VoxelBlock donut;
+u16 aocubepal[25];
 
 void effect6_init() {
 	uint16_t* master_bright = (uint16_t*)(0x400006C);
@@ -30,12 +30,12 @@ void effect6_init() {
 	uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
 	memset( master_bright_sub, (1<<6) | (16), 2 );
 		
-	DISPCNT_A=DISPCNT_MODE_4|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
-	DISPCNT_B=DISPCNT_MODE_4|DISPCNT_BG3_ON|DISPCNT_ON;
+	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
 
 	s16* bg = (u16*)(VRAM_B_OFFS_0K);	
 	for( int i = 0; i < 256*192; i++ ) {
-		u16 c = ((i+1)%3) == 0 ? 10 : 0;
+		u16 c = ((i+1)%3) == 0 ? 5 : 0;
+		c = ((i+2)%3) == 0 ? 2 : 0;
 		bg[i] = c<<10|c<<5|c|0x8000;
 	}
 	
@@ -51,6 +51,15 @@ void effect6_init() {
 	BG2X_B = 0;
 	BG2Y_B = 0;
 
+	int dx = icos(128)/26.5;
+	int dy = isin(128)/26.5;
+	BG2PA_B = dx;
+	BG2PB_B = dy;
+	BG2PC_B = -dy;
+	BG2PD_B = dx;
+	BG2X_B = 4000;
+	BG2Y_B = 10000;
+	
 	// Set up voxelcubes
 	VRAMCNT_D=VRAMCNT_D_LCDC;
 	VRAMCNT_F=VRAMCNT_F_LCDC;
@@ -76,13 +85,28 @@ void effect6_init() {
 
 	InitVoxelBlock(&block,17,17,64,NULL);
 	InitVoxelBlock(&block2,3,3,3,NULL);
+
+	// Background
+	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
+	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
+	BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
+	BG3PA_A = (1 << 8);
+	BG3PB_A = 0;
+	BG3PC_A = 0;
+	BG3PD_A = (1 << 8);
+	BG3X_A = 0;
+	BG3Y_A = 0;
+
+	load8bVRAMIndirect( "nitro:/gfx/aocubes.img.bin", VRAM_A_OFFS_0K,256*192*2);
+	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", PALRAM_A,256*2);
+	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", aocubepal,25*2);
 }
 
 void voxelSpiral(int t) {
 	static uint8_t ri = 0;
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
-
+	
 	// Cross
 	for( int i = 0; i < 3; i++ ) {
 		SetVoxelAt(&block2,i,1,1,rainbowTable[ri]|0x8000);
@@ -151,8 +175,21 @@ void objectShow(int t) {
 
 uint8_t effect6_update( uint32_t t ) {
 	capflip();
-	voxelSpiral(t);		
+	voxelSpiral(t);
 
+	static u16 colpal[25];
+	u16 col;
+	for( int i = 0; i < 25; i++ ) {
+		s16 val = (isin((t)<<8)>>9)+10;
+		col = aocubepal[i];
+		col = col & 0x1F;
+		col = col + val;
+		col = col <= 31 ? col : 31;
+		col = col | col << 5 | col << 10;
+		colpal[i] = col;
+	}
+	dmaCopyHalfWords( 0, colpal, PALRAM_A, 2*25 );
+	
 	// Fadein
 	if( t <= 16 ) {
 		uint16_t* master_bright = (uint16_t*)(0x400006C);
