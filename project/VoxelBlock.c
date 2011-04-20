@@ -1,6 +1,5 @@
 #include "VoxelBlock.h"
 #include "DS3D.h"
-#include "DS3Dextra.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -83,14 +82,14 @@ Voxel *VoxelStructAt(VoxelBlock *self,int x,int y,int z)
 	return &self->voxels[x+(y+z*self->height)*self->width];
 }
 
-void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
+inline void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
 {
-	if(x<0) return;
-	if(y<0) return;
-	if(z<0) return;
-	if(x>=self->width) return;
-	if(y>=self->height) return;
-	if(z>=self->depth) return;
+// 	if(x<0) return;
+// 	if(y<0) return;
+// 	if(z<0) return;
+// 	if(x>=self->width) return;
+// 	if(y>=self->height) return;
+// 	if(z>=self->depth) return;
 
 	Voxel *voxel=&self->voxels[x+(y+z*self->height)*self->width];
 
@@ -136,18 +135,19 @@ void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
 
 
 
-static uint32_t LightFunction(Vector lightdir,float nx,float ny,float nz);
+static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz);
 static void DrawFace(int pattern,int fx,int fy,int fz,int dxdu,int dydu,int dzdu,int dxdv,int dydv,int dzdv);
 
 void DrawVoxelBlock(VoxelBlock *self)
 {
 	DSMatrixMode(DS_POSITION);
+	DSStoreMatrix(0);
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
 
-	Matrix4x4 posmtx=DSGetPositionMatrix();
-	Matrix4x4 inverse=FastMatrixInverse4x4(posmtx);
-	Vector viewdir=MatrixOffset4x4(inverse);
-	Vector lightdir=TransformVector3x3(Matrix4x4To3x3(inverse),MakeVector(DSf32(-1),DSf32(1),DSf32(2)));
+	mat4x4_t posmtx=DSGetPositionMatrix();
+	mat4x4_t inverse=mat4x4affineinverse(posmtx);
+	vec3_t viewdir=vec4_xyz(mat4x4_w(inverse));
+	vec3_t lightdir=mat3x3transform(mat4x4_mat3x3(inverse),vec3(DSf32(-1),DSf32(1),DSf32(2)));
 
 //	Vector viewdir=MakeVector(DSf32(1),DSf32(1),DSf32(-1));
 
@@ -161,6 +161,7 @@ void DrawVoxelBlock(VoxelBlock *self)
 	DSMatrixMode(DS_POSITION);
 	DSScalef32(DSf32(4096),DSf32(4096),DSf32(4096));
 
+	DISP3DCNT|=DS_OUTLINE;
 	DSPolygonAttributes(DS_POLY_MODE_MODULATION|DS_POLY_CULL_NONE|DS_POLY_LIGHT0|DS_POLY_ALPHA(31));
 	DSLight(0,0xffff,0x200);
 
@@ -212,8 +213,9 @@ void DrawVoxelBlock(VoxelBlock *self)
 
 		voxel++;
 	}
-
 	DSEnd();
+	DSMatrixMode(DS_POSITION);
+	DSRestoreMatrix(0);
 }
 
 static inline float TransformRange(float val,float oldlow,float oldhigh,float newlow,float newhigh)
@@ -228,7 +230,7 @@ static inline float ClampRange(float val,float low,float high)
 	return val;
 }
 
-static uint32_t LightFunction(Vector lightdir,float nx,float ny,float nz)
+static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz)
 {
 	float lx=lightdir.x;
 	float ly=lightdir.y;

@@ -12,7 +12,7 @@
 #include "nitrofs.h"
 
 // Effects!
-//#include "effects.h"
+#include "effects.h"
 #include "Truchet.h"
 #include "Fade.h"
 
@@ -40,10 +40,15 @@ int main()
 
 	// Main loop
 	//InitTruchet();
-	InitFade();
+	//InitFade();
+	effect5_init();
 
+	int t = 0;
 	while( 1 ) {
-		Fade();
+		//Truchet();
+		//Fade();
+		t++;
+		effect5_update(t);
 		
  		swiWaitForVBlank();
 	}

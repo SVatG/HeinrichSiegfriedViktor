@@ -3,6 +3,7 @@ NAME = rainbows
 
 # Object files, for the ARM9 binary and the ARM7 binary
 OBJS = Main.o Truchet.o Fade.o ARM.o Drawing.o nitrofs.o \
+       effect5.o effect6.o BoxBlock.o Loader.o VoxelBlock.o RainbowTable.o \
        DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
        DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o 
 
@@ -18,7 +19,7 @@ LIBS7 = -L$(DEVKITPRO)/libnds/lib -lnds7 -lmm7
 # nitrofs under /gfx.
 # This needs work so that the images are not remade every time the binary is
 # compiled.
-BITMAPS=
+BITMAPS=gfx/aocubes.bin
 
 # Compiler setup
 CC = $(DEVKITARM)/bin/arm-eabi-gcc
@@ -48,7 +49,7 @@ LDFLAGS7 = -specs=./ds_arm7_.specs -mthumb -mthumb-interwork -mno-fpu
 $(NAME).nds: $(NAME).arm9 $(NAME).arm7
 	$(DEVKITARM)/bin/grit gfx_source/pal_images/pal_reduced.png -gB8 -gb -ftb -ogfx/palette.png
 	rm gfx/palette.img.bin
-	#cp gfx/*.bin Datafiles/gfx
+	cp gfx/*.bin Datafiles/gfx
 	$(DEVKITARM)/bin/ndstool -c $@ -9 $(NAME).arm9 -7  ../devkit/devkitPro/libnds/default.arm7 -d Datafiles
 
 # Arm9 / Arm7 binary rules

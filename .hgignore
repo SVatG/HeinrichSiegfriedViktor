@@ -8,3 +8,4 @@ gfx/.*\.h$
 ^audio/Encoder$
 ^audio/10BitCompare$
 \.DS_Store$
+glob:*~
