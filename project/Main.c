@@ -14,6 +14,7 @@
 // Effects!
 //#include "effects.h"
 #include "Truchet.h"
+#include "Fade.h"
 
 // Sound!
 #include <maxmod9.h>
@@ -38,13 +39,12 @@ int main()
 	#endif
 
 	// Main loop
-	InitTruchet();
+	//InitTruchet();
+	InitFade();
 
 	while( 1 ) {
-		Truchet();
+		Fade();
 		
-		// 60fps, or less if in DOUBLETHREEDEE MODE, or doing fancy
-		// things like that, the effect in question should know.
  		swiWaitForVBlank();
 	}
 	

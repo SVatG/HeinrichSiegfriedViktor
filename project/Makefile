@@ -2,7 +2,7 @@
 NAME = rainbows
 
 # Object files, for the ARM9 binary and the ARM7 binary
-OBJS = Main.o Truchet.o nitrofs.o \
+OBJS = Main.o Truchet.o Fade.o ARM.o Drawing.o nitrofs.o \
        DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
        DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o 
 
@@ -27,6 +27,9 @@ LD = $(DEVKITARM)/bin/arm-eabi-gcc
 
 CFLAGS = -std=gnu99 -Os -mcpu=arm9e -mtune=arm9e -ffast-math \
 -mthumb -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM9 $(DEFINES) \
+-D__NITRO__ -DBINARY_NAME=\"$(NAME).nds\" -DDEBUG
+CFLAGSARM = -std=gnu99 -Os -mcpu=arm9e -mtune=arm9e -ffast-math \
+-marm -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM9 $(DEFINES) \
 -D__NITRO__ -DBINARY_NAME=\"$(NAME).nds\" -DDEBUG
 CFLAGS7 = -std=gnu99 -O3 -ffast-math -fomit-frame-pointer -mcpu=arm7tdmi \
 -mtune=arm7tdmi -mthumb -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM7 $(DEFINES)
@@ -65,6 +68,9 @@ Main.arm7.o: Main.arm7.c
 
 Main.o: Main.c $(BITMAPS)
 
+ARM.o: ARM.c
+	$(CC) $(CFLAGSARM) -c -o $@ $<
+
 # To clean, delete all binary objects and converted images
 clean:
 	rm -f $(NAME).nds $(NAME).arm9 $(NAME).arm7 $(NAME).arm9.elf $(NAME).arm7.elf $(OBJS) $(OBJS7) $(BITMAPS) gfx/*.c gfx/*.h gfx/*.bin *~ Datafiles/gfx/*
@@ -76,6 +82,9 @@ cleanimages:
 # Compile if neccesary and run in emulator
 test: $(NAME).nds
 	/usr/bin/wine $(DEVKITPRO)/nocash/NOCASH.EXE $(NAME).nds
+
+run: $(NAME).nds
+	open $(NAME).nds
 
 # Send binary to flash card for testing on the system
 todisk: $(NAME).nds
