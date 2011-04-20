@@ -56,7 +56,7 @@ void effect5_init() {
 
 	DSMatrixMode(DS_PROJECTION);
 	DSLoadIdentity();
-	DSPerspective(100,256.0/192.0,1,1024);
+	DSPerspectivef(100,256.0/192.0,1,1024);
 
 	InitBoxBlock(&balls,26,24,20);
 
@@ -81,9 +81,9 @@ void MetaBallsA(int t) {
 	float dx = -14+(isin(t<<2)>>8);
 	float dy = -12;
 	float dz = -10;
-	u16 c = rainbowTable[++ri]|0x8000;
-	u16 d = rainbowTable[(ri+40)%255]|0x8000;
-	u16 e = rainbowTable[(ri+90)%255]|0x8000;
+	uint16_t c = rainbowTable[++ri]|0x8000;
+	uint16_t d = rainbowTable[(ri+40)%255]|0x8000;
+	uint16_t e = rainbowTable[(ri+90)%255]|0x8000;
 	int det = 0;
 	for( int x = 0; x < 26; x++ ) {
 		for( int y = ballRound; y < ballRound+2; y++ ) {

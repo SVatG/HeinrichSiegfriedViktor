@@ -6,13 +6,14 @@
 #define __LOADER_H__
 
 // General-purpose includes
-#include <nds.h>
+//#include <nds.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 // Register definitions
 #include "Hardware.h"

@@ -1,3 +1,5 @@
+#include <nds.h>
+
 #include "DS3D/Utils.h"
 #include "DS3D/DS3D.h"
 #include "VoxelBlock.h"
@@ -81,7 +83,7 @@ void effect6_init() {
 
 	DSMatrixMode(DS_PROJECTION);
 	DSLoadIdentity();
-	DSPerspective(100,256.0/192.0,1,1024);
+	DSPerspectivef(100,256.0/192.0,1,1024);
 
 	InitVoxelBlock(&block,17,17,64,NULL);
 	InitVoxelBlock(&block2,3,3,3,NULL);

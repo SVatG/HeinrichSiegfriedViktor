@@ -2,6 +2,7 @@
  * Functions that load things from the file system.
  */
 
+#include <nds.h>
 #include "Loader.h"
 
 // Load a single 16bit image into RAM, ensuring it is visible

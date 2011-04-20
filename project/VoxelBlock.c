@@ -1,7 +1,8 @@
 #include "VoxelBlock.h"
-#include "DS3D.h"
+#include "DS3D/DS3D.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 
@@ -135,7 +136,7 @@ inline void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
 
 
 
-static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz);
+static uint32_t LightFunction(ivec3_t lightdir,float nx,float ny,float nz);
 static void DrawFace(int pattern,int fx,int fy,int fz,int dxdu,int dydu,int dzdu,int dxdv,int dydv,int dzdv);
 
 void DrawVoxelBlock(VoxelBlock *self)
@@ -144,10 +145,10 @@ void DrawVoxelBlock(VoxelBlock *self)
 	DSStoreMatrix(0);
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
 
-	mat4x4_t posmtx=DSGetPositionMatrix();
-	mat4x4_t inverse=mat4x4affineinverse(posmtx);
-	vec3_t viewdir=vec4_xyz(mat4x4_w(inverse));
-	vec3_t lightdir=mat3x3transform(mat4x4_mat3x3(inverse),vec3(DSf32(-1),DSf32(1),DSf32(2)));
+	imat4x4_t posmtx=DSGetPositionMatrix();
+	imat4x4_t inverse=imat4x4affineinverse(posmtx);
+	ivec3_t viewdir=ivec4_xyz(imat4x4_w(inverse));
+	ivec3_t lightdir=imat3x3transform(imat4x4_mat3x3(inverse),ivec3(DSf32(-1),DSf32(1),DSf32(2)));
 
 //	Vector viewdir=MakeVector(DSf32(1),DSf32(1),DSf32(-1));
 
@@ -230,7 +231,7 @@ static inline float ClampRange(float val,float low,float high)
 	return val;
 }
 
-static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz)
+static uint32_t LightFunction(ivec3_t lightdir,float nx,float ny,float nz)
 {
 	float lx=lightdir.x;
 	float ly=lightdir.y;
