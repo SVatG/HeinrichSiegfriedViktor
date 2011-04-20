@@ -1,11 +1,11 @@
 #include "Utils.h"
 #include "DS3D.h"
-#include "VoxelBlock.h"
+#include "BoxBlock.h"
 #include "Hardware.h"
 #include "Loader.h"
 #include "RainbowTable.h"
 
-VoxelBlock balls;
+BoxBlock balls;
 
 void effect5_init() {
 	uint16_t* master_bright = (uint16_t*)(0x400006C);
@@ -40,6 +40,8 @@ void effect5_init() {
 	VRAMCNT_D=VRAMCNT_D_LCDC;
 	VRAMCNT_F=VRAMCNT_F_LCDC;
 
+	loadVRAMIndirect( "nitro:/textures.pal4", VRAM_LCDC_D,16384);
+	
 	for(int i=0;i<16;i++) VRAM_LCDC_F[i]=MakeRGB15(i+16,i+16,i+16);
 
 	VRAMCNT_D=VRAMCNT_D_TEXTURE_OFFS_0K;
@@ -48,7 +50,6 @@ void effect5_init() {
 	DSInit3D();
 	DSViewport(0,0,255,191);
 
-	DSSetControl(DS_TEXTURING|DS_ANTIALIAS);
 	DSClearParams(26,26,26,0,63);
 
 	DSSetPaletteOffset(0,DS_TEX_FORMAT_PAL4);
@@ -57,7 +58,7 @@ void effect5_init() {
 	DSLoadIdentity();
 	DSPerspective(100,256.0/192.0,1,1024);
 
-	InitVoxelBlock(&balls,17,17,64,NULL);
+	InitBoxBlock(&balls,26,24,20);
 
 	// Background
 	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
@@ -71,53 +72,42 @@ void effect5_init() {
 	BG3Y_A = 0;
 }
 
+int ballRound = 0;
 void MetaBallsA(int t) {
 	static uint8_t ri = 0;
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
 
-	// Move blocks
-	if(t%4==0) {
-		ScrollVoxelBlockByZ(&balls);
-	}
-
-	// Spiral rainbows
-	float dxp = (icos((t-3)<<3)>>9);
-	float dyp = (isin((t-3)<<3)>>9);
-	float dx = (icos(t<<3)>>9);
-	float dy = (isin(t<<3)>>9);
+	float dx = -14+(isin(t<<2)>>8);
+	float dy = -12;
+	float dz = -10;
 	u16 c = rainbowTable[++ri]|0x8000;
 	u16 d = rainbowTable[(ri+40)%255]|0x8000;
 	u16 e = rainbowTable[(ri+90)%255]|0x8000;
-	u16 f = rainbowTable[(ri+170)%255]|0x8000;
-	for( int i = 0; i < 3; i++ ) {
-		SetVoxelAt(&balls,i+8+dxp,8+dyp,0,0);
-		SetVoxelAt(&balls,i+8+dx,8+dy,0,c);
-		SetVoxelAt(&balls,i+8+dyp,8-dxp,0,0);
-		SetVoxelAt(&balls,i+8+dy,8-dx,0,d);
-		SetVoxelAt(&balls,i+8-dxp,8-dyp,0,0);
-		SetVoxelAt(&balls,i+8-dx,8-dy,0,e);
-		SetVoxelAt(&balls,i+8-dyp,8+dxp,0,0);
-		SetVoxelAt(&balls,i+8-dy,8+dx,0,f);
+	int det = 0;
+	for( int x = 0; x < 26; x++ ) {
+		for( int y = ballRound; y < ballRound+2; y++ ) {
+			for( int z = 0; z < 20; z++ ) {
+				det = ((dx+x)*(dx+x)+(dy+y)*(dy+y)+(dz+z)*(dz+z));
+				if(det<10) {
+					SetBoxAt(&balls,x,y,z,c,2);
+				}
+				else {
+					SetBoxAt(&balls,x,y,z,0,0);
+				}
+			}
+		}
 	}
-	for( int i = -1; i < 2; i+=2 ) {
-		SetVoxelAt(&balls,9+dxp,i+8+dyp,0,0);
-		SetVoxelAt(&balls,9+dx,i+8+dy,0,c);
-		SetVoxelAt(&balls,9+dyp,i+8-dxp,0,0);
-		SetVoxelAt(&balls,9+dy,i+8-dx,0,d);
-		SetVoxelAt(&balls,9-dxp,i+8-dyp,0,0);
-		SetVoxelAt(&balls,9-dx,i+8-dy,0,e);
-		SetVoxelAt(&balls,9-dyp,i+8+dxp,0,0);
-		SetVoxelAt(&balls,9-dy,i+8+dx,0,f);
+	ballRound += 2;
+	if(ballRound == 24 ) {
+		ballRound = 0;
 	}
-	RefreshVoxelBlock(&balls);
 
 	// Move things
-	DSTranslatef(0,0,200);
 	DSRotateZi(-t<<2);
-	DSScalef(8,8,8);
-	DSTranslatef32(DSf32(0),DSf32(0),((t&3)<<10)-DSf32(33));
-	DrawVoxelBlock(&balls);
+	DSRotateYi(t>>3);
+	DSTranslatef(0,0,-10);
+	DrawBoxBlock(&balls);
 	DSSwapBuffers(0);
 }
 
@@ -137,6 +127,6 @@ uint8_t effect5_update( uint32_t t ) {
 
 
 void effect5_destroy() {
-	CleanupVoxelBlock(&balls);
+	CleanupBoxBlock(&balls);
 }
 

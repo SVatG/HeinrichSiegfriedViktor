@@ -82,14 +82,14 @@ Voxel *VoxelStructAt(VoxelBlock *self,int x,int y,int z)
 	return &self->voxels[x+(y+z*self->height)*self->width];
 }
 
-void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
+inline void SetVoxelAt(VoxelBlock *self,int x,int y,int z,uint16_t val)
 {
-	if(x<0) return;
-	if(y<0) return;
-	if(z<0) return;
-	if(x>=self->width) return;
-	if(y>=self->height) return;
-	if(z>=self->depth) return;
+// 	if(x<0) return;
+// 	if(y<0) return;
+// 	if(z<0) return;
+// 	if(x>=self->width) return;
+// 	if(y>=self->height) return;
+// 	if(z>=self->depth) return;
 
 	Voxel *voxel=&self->voxels[x+(y+z*self->height)*self->width];
 
