@@ -2,8 +2,9 @@
 NAME = rainbows
 
 # Object files, for the ARM9 binary and the ARM7 binary
-OBJS = Main.o Truchet.o \
-       DS3D.o Utils.o Vector.o Matrix.o Quaternion.o nitrofs.o 
+OBJS = Main.o Truchet.o nitrofs.o \
+       DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
+       DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o 
 
 OBJS7 = Main.arm7.o
 
@@ -26,7 +27,7 @@ LD = $(DEVKITARM)/bin/arm-eabi-gcc
 
 CFLAGS = -std=gnu99 -Os -mcpu=arm9e -mtune=arm9e -ffast-math \
 -mthumb -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM9 $(DEFINES) \
--D__NITRO__ -DBINARY_NAME=\"$(NAME).nds\" -DUSE_FIXEDPOINT -DDEBUG
+-D__NITRO__ -DBINARY_NAME=\"$(NAME).nds\" -DDEBUG
 CFLAGS7 = -std=gnu99 -O3 -ffast-math -fomit-frame-pointer -mcpu=arm7tdmi \
 -mtune=arm7tdmi -mthumb -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM7 $(DEFINES)
 LDFLAGS = -specs=ds_arm9.specs -mthumb -mthumb-interwork -mno-fpu
