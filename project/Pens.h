@@ -2,15 +2,16 @@
 #define __PENS_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#define MaxPens 4
+#define MaxPens 5
 
 typedef struct PenFrame
 {
-	struct { uint8_t x,y; } coords[MaxPens];
+	struct { uint8_t x,y; } pens[MaxPens];
 } PenFrame;
 
-void InitPensOnSecondaryScreen();
+void InitPensOnSecondaryScreen(bool recordmode);
 
 void RunPens(PenFrame *frames,int numframes,int frame);
 

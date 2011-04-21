@@ -53,8 +53,8 @@ void Truchet(int frame)
 //pos=ivec3(Random()%F(1),Random()%F(1),Random()%F(1));
 //iprintf("%x\n",pos.x);
 
-	int32_t sin_a=isin(t*10);
-	int32_t cos_a=icos(t*10);
+	int32_t sin_a=isin(t*5);
+	int32_t cos_a=icos(t*5);
 
 	ivec3_t back=ivec3(0,0,DSf32(1));
 	back=ivec3(back.y,imul(back.z,cos_a)-imul(back.x,sin_a),imul(back.x,cos_a)+imul(back.z,sin_a));
@@ -71,7 +71,7 @@ void Truchet(int frame)
 	imat3x3_t m=imat3x3vec3(ivec3cross(up,back),up,back);
 
 //	float tt=t/40;
-	int32_t tt=idiv(DSf32(t),DSf32(40));
+	int32_t tt=idiv(DSf32(t),DSf32(80));
 	ivec3_t pos=/*fract(*/ivec3(
 		2*(fakesin(tt+fakesin(2*tt)/2)/2+DSf32(0.5)),
 		2*(fakesin(tt-fakesin(2*tt)/2-DSf32(3.141592/2.0))/2+DSf32(0.5)),
@@ -337,7 +337,7 @@ static void MakeArcList(uint32_t *list,int listsize,int thickness)
 	DSListEnd();
 
 	int size=DSFinishList();
-	iprintf("Size: %d\n",size);
+	//iprintf("Size: %d\n",size);
 }
 
 static void MakeTexture(uint16_t *vram,int r1,int g1,int b1,int r2,int g2,int b2)

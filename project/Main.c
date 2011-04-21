@@ -23,7 +23,7 @@
 volatile uint32_t t;
 static void vblank();
 
-static PenFrame pens[30*60*3];
+static PenFrame pens[60*60*3];
 
 int main()
 {
@@ -40,20 +40,22 @@ int main()
 // 	mmStart( MOD_LIGHTMUSIC3_SHORT, MM_PLAY_ONCE );
 	
 	#ifdef DEBUG
-	consoleDemoInit();
-	iprintf( "Debug mode.\n" );
+	//consoleDemoInit();
+	//iprintf( "Debug mode.\n" );
 	#endif
 
 	t = 0;
 
 	// Main loop
-	InitPensOnSecondaryScreen(t/2);
+	InitPensOnSecondaryScreen(true);
 	InitTruchet(t);
 	//effect5_init();
 
+	ClearPenData(pens,60*60*3);
+
 	while( 1 ) {
 		//Truchet();
-		RunPens(pens,30*60*3,t/2);
+		RunPens(pens,60*60*3,t);
 		Truchet(t);
 		//effect5_update(t);
 		
