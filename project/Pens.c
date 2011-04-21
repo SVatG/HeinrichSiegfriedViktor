@@ -1,4 +1,5 @@
 #include <nds.h>
+#include <stdio.h>
 
 #include "Pens.h"
 #include "ARM.h"
@@ -16,7 +17,7 @@ static void GeneratePaletteBlock(int block,int h)
 }
 
 int lastframe,currpen;
-bool recording;
+bool recording,wasdown;
 int pencol[MaxPens];
 
 void InitPensOnSecondaryScreen(bool recordmode)
@@ -51,6 +52,7 @@ void InitPensOnSecondaryScreen(bool recordmode)
 
 	lastframe=-1;
 	recording=recordmode;
+	wasdown=false;
 
 	if(recording) currpen=0;
 	else currpen=4;
@@ -82,15 +84,20 @@ void RunPens(PenFrame *frames,int numframes,int frame)
 			frames[t].pens[currpen].x=pen.px;
 			frames[t].pens[currpen].y=pen.py;
 		}
+		wasdown=true;
     }
 	else
 	{
-		int t=lastframe+1;
-		if(t<numframes)
+		if(wasdown)
 		{
-			frames[t].pens[currpen].x=0xff;
-			frames[t].pens[currpen].y=0xff;
+			int t=lastframe+1;
+			if(t<numframes)
+			{
+				frames[t].pens[currpen].x=0xff;
+				frames[t].pens[currpen].y=0xff;
+			}
 		}
+		wasdown=false;
 	}
 
 	for(unsigned int t=lastframe+1;t<=frame;t++)
@@ -143,11 +150,25 @@ void ClearPenData(PenFrame *frames,int numframes)
 	memset(frames,0xff,sizeof(PenFrame)*numframes);
 }
 
-void LoadPenData(PenFrame *frames,int numframes,const char *filename)
+bool LoadPenData(PenFrame *frames,int numframes,const char *filename)
 {
+	FILE *fh=fopen(filename,"rb");
+	if(!fh) return false;
+
+	fread(frames,numframes*sizeof(PenFrame),1,fh);
+	fclose(fh);
+
+	return true;
 }
 
-void SavePenData(PenFrame *frames,int numframes,const char *filename)
+bool SavePenData(PenFrame *frames,int numframes,const char *filename)
 {
+	FILE *fh=fopen(filename,"wb");
+	if(!fh) return false;
+
+	fwrite(frames,numframes*sizeof(PenFrame),1,fh);
+	fclose(fh);
+
+	return true;
 }
 

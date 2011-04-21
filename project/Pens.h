@@ -16,7 +16,7 @@ void InitPensOnSecondaryScreen(bool recordmode);
 void RunPens(PenFrame *frames,int numframes,int frame);
 
 void ClearPenData(PenFrame *frames,int numframes);
-void LoadPenData(PenFrame *frames,int numframes,const char *filename);
-void SavePenData(PenFrame *frames,int numframes,const char *filename);
+bool LoadPenData(PenFrame *frames,int numframes,const char *filename);
+bool SavePenData(PenFrame *frames,int numframes,const char *filename);
 
 #endif

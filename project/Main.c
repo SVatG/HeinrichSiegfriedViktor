@@ -51,17 +51,27 @@ int main()
 	InitTruchet(t);
 	//effect5_init();
 
-	ClearPenData(pens,60*60*3);
+	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen"))
+	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"nitro:/rainbows.pen"))
+	ClearPenData(pens,sizeof(pens)/sizeof(*pens));
 
-	while( 1 ) {
+	while( t<60*60 ) {
 		//Truchet();
-		RunPens(pens,60*60*3,t);
+		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
 		Truchet(t);
 		//effect5_update(t);
 		
  		swiWaitForVBlank();
 	}
-	
+
+	// Superstitious save.
+	SavePenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+	LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+
+	POWCNT1 = POWCNT1_ALL;
+
+	for(;;);
+
 	return 0;
 }
 
