@@ -200,7 +200,7 @@ void DrawWorld(imat4x3_t cam)
 		const int32_t half=DSf32(0.5);
 		ivec3_t center=ivec3(DSf32(x)+half,DSf32(y)+half,DSf32(z)+half);
 		ivec3_t camtocenter=ivec3sub(center,pos);
-		if(ivec3dot(zaxis,camtocenter)>DSf32(1)) continue;
+		if(ivec3dot(zaxis,camtocenter)>DSf32(0.5)) continue;
 
 		DSPushMatrix();
 		DSTranslatev(center);

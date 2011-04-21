@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-void ATTR_ITCM Decay(uint16_t *screenbase)
+void ATTR_ITCM Decay(uint16_t *screenbase,int lines)
 {
 /*	uint32_t *ptr=(uint32_t *)screenbase;
 
@@ -38,7 +38,7 @@ void ATTR_ITCM Decay(uint16_t *screenbase)
 */
 
 	register uint32_t r0 asm("r0")=(uint32_t)screenbase;
-	register uint32_t r1 asm("r1")=256*192/4/8;
+	register uint32_t r1 asm("r1")=lines*256/4/8;
 	register uint32_t r2 asm("r2")=0x01010101;
 
 	asm volatile (

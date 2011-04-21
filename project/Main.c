@@ -14,7 +14,7 @@
 // Effects!
 #include "effects.h"
 #include "Truchet.h"
-#include "Fade.h"
+#include "Pens.h"
 
 // Sound!
 #include <maxmod9.h>
@@ -23,7 +23,7 @@
 int main()
 {
 	// Turn on everything.
-	POWCNT1 = POWCNT1_ALL;
+	POWCNT1 = POWCNT1_ALL_SWAP;
 	irqEnable( IRQ_VBLANK );
 	
 	// Init NitroFS for data loading.
@@ -39,16 +39,17 @@ int main()
 	#endif
 
 	// Main loop
-	//InitTruchet();
-	//InitFade();
-	effect5_init();
+	InitPensOnSecondaryScreen();
+	InitTruchet();
+	//effect5_init();
 
 	int t = 0;
 	while( 1 ) {
 		//Truchet();
-		//Fade();
+		RunPens();
+		Truchet();
 		t++;
-		effect5_update(t);
+		//effect5_update(t);
 		
  		swiWaitForVBlank();
 	}

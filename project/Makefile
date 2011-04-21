@@ -2,7 +2,7 @@
 NAME = rainbows
 
 # Object files, for the ARM9 binary and the ARM7 binary
-OBJS = Main.o Truchet.o Fade.o ARM.o Drawing.o nitrofs.o \
+OBJS = Main.o Truchet.o Pens.o ARM.o Drawing.o nitrofs.o \
        effect5.o effect6.o BoxBlock.o Loader.o VoxelBlock.o RainbowTable.o \
        DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
        DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o 
@@ -86,6 +86,10 @@ test: $(NAME).nds
 
 run: $(NAME).nds
 	open $(NAME).nds
+
+install: $(NAME).nds
+	cp $(NAME).nds /Volumes/NDS/
+	hdiutil eject /Volumes/NDS/
 
 # Send binary to flash card for testing on the system
 todisk: $(NAME).nds

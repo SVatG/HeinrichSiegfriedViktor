@@ -6,6 +6,6 @@
 
 //void ClaimWRAM();
 
-void ATTR_ITCM Decay(uint16_t *screenbase);
+void ATTR_ITCM Decay(uint16_t *screenbase,int lines);
 
 #endif
