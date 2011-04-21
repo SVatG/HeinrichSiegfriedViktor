@@ -20,12 +20,18 @@
 #include <maxmod9.h>
 #include "music.h"
 
+volatile uint32_t t;
+static void vblank();
+
+static PenFrame pens[30*60*3];
+
 int main()
 {
 	// Turn on everything.
 	POWCNT1 = POWCNT1_ALL_SWAP;
 	irqEnable( IRQ_VBLANK );
-	
+	irqSet(IRQ_VBLANK,vblank);
+
 	// Init NitroFS for data loading.
 	nitroFSInitAdv( BINARY_NAME );
 
@@ -38,17 +44,17 @@ int main()
 	iprintf( "Debug mode.\n" );
 	#endif
 
+	t = 0;
+
 	// Main loop
-	InitPensOnSecondaryScreen();
-	InitTruchet();
+	InitPensOnSecondaryScreen(t/2);
+	InitTruchet(t);
 	//effect5_init();
 
-	int t = 0;
 	while( 1 ) {
 		//Truchet();
-		RunPens();
-		Truchet();
-		t++;
+		RunPens(pens,30*60*3,t/2);
+		Truchet(t);
 		//effect5_update(t);
 		
  		swiWaitForVBlank();
@@ -56,3 +62,7 @@ int main()
 	
 	return 0;
 }
+
+static void vblank() { t++; }
+
+

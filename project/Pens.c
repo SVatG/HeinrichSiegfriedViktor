@@ -52,16 +52,22 @@ void InitPensOnSecondaryScreen()
 
 void RunPens(PenFrame *frames,int numframes,int frame)
 {
-	Decay(VRAM_B_OFFS_0K,192);
-//	Decay(VRAM_B_OFFS_0K);
+	if(frame<=lastframe) return;
 
-	for(int i=0;i<10;i++)
+	for(int t=lastframe+1;t<=frame;t++)
 	{
-		DrawLineWithClip(VRAM_B_OFFS_0K,
-		Random()%256,Random()%192,Random()%256,Random()%192,
-		(Random()%12)*16+15+16,false);
+		Decay(VRAM_B_OFFS_0K,192);
+//		Decay(VRAM_B_OFFS_0K);
+
+		for(int i=0;i<10;i++)
+		{
+			DrawLineWithClip(VRAM_B_OFFS_0K,
+			Random()%256,Random()%192,Random()%256,Random()%192,
+			(Random()%12)*16+15+16,false);
+		}
 	}
 
+	lastframe=frame;
 }
 
 void ClearPenData(PenFrame *frames,int numframes)
@@ -76,3 +82,4 @@ void LoadPenData(PenFrame *frames,int numframes,const char *filename)
 void SavePenData(PenFrame *frames,int numframes,const char *filename)
 {
 }
+

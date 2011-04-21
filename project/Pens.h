@@ -12,7 +12,7 @@ typedef struct PenFrame
 
 void InitPensOnSecondaryScreen();
 
-void RunPens();
+void RunPens(PenFrame *frames,int numframes,int frame);
 
 void ClearPenData(PenFrame *frames,int numframes);
 void LoadPenData(PenFrame *frames,int numframes,const char *filename);

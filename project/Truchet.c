@@ -7,12 +7,11 @@
 void InitWorld();
 void DrawWorld(imat4x3_t cam);
 
-static int t;
-
+static int startframe;
 static iquat_t rot;
 static ivec3_t pos;
 
-void InitTruchet()
+void InitTruchet(int frame)
 {
 	DISPCNT_A=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_3D|DISPCNT_BG0_ON;
 
@@ -28,8 +27,7 @@ void InitTruchet()
 
 	DSSetFogLinearf(0,0,0,31,1,3.5,0.1,4);
 
-	t=0;
-
+	startframe=frame;
 	rot=iquatone;
 	pos=ivec3zero;
 
@@ -42,8 +40,10 @@ int32_t fakesin(int32_t x)
 	return isin(x);
 }
 
-void Truchet()
+void Truchet(int frame)
 {
+	int t=frame-startframe;
+
 /*	rot=iquatmul(rot,iquatrotation(-40,ivec3(F(1),0,0)));
 	rot=iquatmul(rot,iquatrotation(40,ivec3(0,F(1),0)));
 	rot=iquatnorm(rot);

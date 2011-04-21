@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-void InitTruchet();
-void Truchet();
+void InitTruchet(int frame);
+void Truchet(int frame);
 
 #endif
 
