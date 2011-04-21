@@ -76,7 +76,7 @@ void effect6_init() {
 	DSInit3D();
 	DSViewport(0,0,255,191);
 
-	DSSetControl(DS_TEXTURING|DS_ANTIALIAS);
+	DSSetControl(DS_ANTIALIAS);
 	DSClearParams(26,26,26,0,63);
 
 	DSSetPaletteOffset(0,DS_TEX_FORMAT_PAL4);
