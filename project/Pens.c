@@ -13,6 +13,10 @@ static void GeneratePaletteBlock(int block,int h)
 	}
 }
 
+int lastframe;
+uint8_t lastx[MaxPens];
+uint8_t lasty[MaxPens];
+
 void InitPensOnSecondaryScreen()
 {
 	VRAMCNT_H=VRAMCNT_H_BG_VRAM_B;
@@ -41,9 +45,12 @@ void InitPensOnSecondaryScreen()
 	GeneratePaletteBlock(10,270);
 	GeneratePaletteBlock(11,300);
 	GeneratePaletteBlock(12,330);
+
+	lastframe=-1;
+	for(int i=0;i<MaxPens;i++) lasty[i]=0xff;
 }
 
-void RunPens()
+void RunPens(PenFrame *frames,int numframes,int frame)
 {
 	Decay(VRAM_B_OFFS_0K,192);
 //	Decay(VRAM_B_OFFS_0K);
@@ -59,6 +66,7 @@ void RunPens()
 
 void ClearPenData(PenFrame *frames,int numframes)
 {
+	memset(frames,0xff,sizeof(PenFrame)*numframes);
 }
 
 void LoadPenData(PenFrame *frames,int numframes,const char *filename)
