@@ -31,9 +31,6 @@ inline void SetBoxAt(BoxBlock *self,int x,int y,int z,uint16_t val,uint8_t size)
 	box->size=size;
 }
 
-static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz);
-
-// This has changes, though
 static void DrawBoxFace(int fx,int fy,int fz,int dxdu,int dydu,int dzdu,int dxdv,int dydv,int dzdv);
 
 void DrawBoxBlock(BoxBlock *self) {
@@ -42,32 +39,35 @@ void DrawBoxBlock(BoxBlock *self) {
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
 	
 	DSMatrixMode(DS_POSITION);
-	DSScalef32(DSf32(4096),DSf32(4096),DSf32(4096));
+	DSScalef32(DSf32(256),DSf32(256),DSf32(256));
 
-	DSPolygonAttributes(DS_POLY_MODE_MODULATION|DS_POLY_CULL_NONE|DS_POLY_LIGHT0|DS_POLY_ALPHA(10));
-	DSLight3f(0,0xffff,1,1,1);
+	DSPolygonAttributes(DS_POLY_CULL_NONE|DS_POLY_LIGHT0|DS_POLY_ALPHA(31));
+	DSLight3f(0,0xCCCC,-1,-10,-1);
 
 	DSBegin(DS_QUADS);
 
+	int boxsize = 0;
+	
 	Box *box=self->boxes;
-	for(int z=0;z<self->depth;z++)
-	for(int y=0;y<self->height;y++)
-	for(int x=0;x<self->width;x++)
+	for(int z=0;z<self->depth*16;z+=16)
+	for(int y=0;y<self->height*16;y+=16)
+	for(int x=0;x<self->width*16;x+=16)
 	{
 		if(IsBoxFilled(box->colour)) {
-			DSMaterialDiffuseAndAmbient(box->colour,10);
+			boxsize = box->size;
+			DSMaterialDiffuseAndAmbient(box->colour,box->colour);
 			DSNormal3f(-1,0,0);
-			DrawBoxFace(x,y,z,0,1,0,0,0,1);
+			DrawBoxFace(x,y,z,0,boxsize,0,0,0,boxsize);
 			DSNormal3f(1,0,0);
-			DrawBoxFace(x+1,y,z,0,1,0,0,0,1);
+			DrawBoxFace(x+boxsize,y,z,0,boxsize,0,0,0,boxsize);
 			DSNormal3f(0,-1,0);
-			DrawBoxFace(x,y,z,0,0,1,1,0,0);
+			DrawBoxFace(x,y,z,0,0,boxsize,boxsize,0,0);
 			DSNormal3f(0,1,0);
-			DrawBoxFace(x,y+1,z,0,0,1,1,0,0);
+			DrawBoxFace(x,y+boxsize,z,0,0,boxsize,boxsize,0,0);
 			DSNormal3f(0,0,-1);
-			DrawBoxFace(x,y,z,1,0,0,0,1,0);
+			DrawBoxFace(x,y,z,boxsize,0,0,0,boxsize,0);
 			DSNormal3f(0,0,1);
-			DrawBoxFace(x,y,z+1,1,0,0,0,1,0);
+			DrawBoxFace(x,y,z+boxsize,boxsize,0,0,0,boxsize,0);
 		}
 
 		box++;
@@ -84,29 +84,4 @@ static void DrawBoxFace(int fx,int fy,int fz,int dxdu,int dydu,int dzdu,int dxdv
 	DSVertex3v16(fx+dxdu,fy+dydu,fz+dzdu);
 	DSVertex3v16(fx+dxdu+dxdv,fy+dydu+dydv,fz+dzdu+dzdv);
 	DSVertex3v16(fx+dxdv,fy+dydv,fz+dzdv);
-}
-
-static inline float TransformRange(float val,float oldlow,float oldhigh,float newlow,float newhigh)
-{
-	return (val-oldlow)/(oldhigh-oldlow)*(newhigh-newlow)+newlow;
-}
-
-static inline float ClampRange(float val,float low,float high)
-{
-	if(val<low) return low;
-	if(val>high) return high;
-	return val;
-}
-
-static uint32_t LightFunction(vec3_t lightdir,float nx,float ny,float nz)
-{
-	float lx=lightdir.x;
-	float ly=lightdir.y;
-	float lz=lightdir.z;
-	float l=sqrt(lx*lx+ly*ly+lz*lz);
-	lx/=l; ly/=l; lz/=l;
-
-	float light=ClampRange(TransformRange(lx*nx+ly*ny+lz*nz,-0.5,1,0.5,1),0.5,1);
-
-	return ((int)(light*511))&0x3ff;
 }

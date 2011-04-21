@@ -49,7 +49,8 @@ void effect5_init() {
 
 	DSInit3D();
 	DSViewport(0,0,255,191);
-
+	
+	DSSetControl(DS_ALPHA_BLEND|DS_ANTIALIAS);
 	DSClearParams(26,26,26,0,63);
 
 	DSSetPaletteOffset(0,DS_TEX_FORMAT_PAL4);
@@ -78,7 +79,7 @@ void MetaBallsA(int t) {
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
 
-	float dx = -14+(isin(t<<2)>>8);
+	float dx = -14+((float)isin(t<<3))/256.0;
 	float dy = -12;
 	float dz = -10;
 	u16 c = rainbowTable[++ri]|0x8000;
@@ -86,11 +87,11 @@ void MetaBallsA(int t) {
 	u16 e = rainbowTable[(ri+90)%255]|0x8000;
 	int det = 0;
 	for( int x = 0; x < 26; x++ ) {
-		for( int y = ballRound; y < ballRound+2; y++ ) {
+		for( int y = ballRound; y < ballRound+8; y++ ) {
 			for( int z = 0; z < 20; z++ ) {
 				det = ((dx+x)*(dx+x)+(dy+y)*(dy+y)+(dz+z)*(dz+z));
-				if(det<10) {
-					SetBoxAt(&balls,x,y,z,c,2);
+				if(det<15) {
+					SetBoxAt(&balls,x,y,z,c,15-det);
 				}
 				else {
 					SetBoxAt(&balls,x,y,z,0,0);
@@ -98,7 +99,7 @@ void MetaBallsA(int t) {
 			}
 		}
 	}
-	ballRound += 2;
+	ballRound += 8;
 	if(ballRound == 24 ) {
 		ballRound = 0;
 	}
