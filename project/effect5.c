@@ -1,3 +1,5 @@
+#include <nds.h>
+
 #include "Utils.h"
 #include "DS3D/DS3D.h"
 #include "BoxBlock.h"
@@ -15,13 +17,14 @@ typedef struct ball {
 BoxBlock balls;
 ball ballp[3];
 
+uint16_t metaballpal[25];
 void effect5_init() {
 	uint16_t* master_bright = (uint16_t*)(0x400006C);
 	memset( master_bright, (1<<6) | (16), 2 );
 	uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
 	memset( master_bright_sub, (1<<6) | (16), 2 );
 
-	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_ON;
+	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
 
 	// Set up voxelcubes
 	DSInit3D();
@@ -40,12 +43,16 @@ void effect5_init() {
 	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
 	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
 	BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
-	BG3PA_A = (1 << 8);
+	BG3PA_A = (1 << 9);
 	BG3PB_A = 0;
 	BG3PC_A = 0;
-	BG3PD_A = (1 << 8);
+	BG3PD_A = (1 << 9);
 	BG3X_A = 0;
 	BG3Y_A = 0;
+
+	load8bVRAMIndirect( "nitro:/gfx/metaballs.img.bin", VRAM_A_OFFS_0K,256*192*2);
+	loadVRAMIndirect( "nitro:/gfx/metaballs.pal.bin", PALRAM_A,256*2);
+	loadVRAMIndirect( "nitro:/gfx/metaballs.pal.bin", metaballpal,25*2);
 }
 
 int ballRound = 0;
@@ -116,6 +123,16 @@ void MetaBallsA(int t) {
 uint8_t effect5_update( uint32_t t ) {
 	MetaBallsA(t);
 
+	int dx=icos(t*8)>>4;
+	int dy=isin(t*8)>>4;
+
+	BG3PA_A=dx;
+	BG3PB_A=dy;
+	BG3PC_A=-dy;
+	BG3PD_A=dx;
+	BG3X_A=-128*dx-92*dy+(128<<8)+t<<2;
+	BG3Y_A=+128*dy-92*dx+(92<<8)+t<<1;
+	
 	// Fadein
 	if( t <= 16 ) {
 		uint16_t* master_bright = (uint16_t*)(0x400006C);
