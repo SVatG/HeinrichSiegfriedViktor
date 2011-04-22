@@ -59,7 +59,7 @@ int main()
 // 		Truchet();
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
 		Truchet(t);
-		effect6_update(t);
+// 		effect6_update(t);
 		
  		swiWaitForVBlank();
 	}
