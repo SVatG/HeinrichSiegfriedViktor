@@ -1,3 +1,5 @@
+// AO Cubes
+
 #include <nds.h>
 
 #include "DS3D/Utils.h"
@@ -7,18 +9,24 @@
 #include "Loader.h"
 #include "RainbowTable.h"
 
+int cubemode = 1;
+
 // Cap/flip
 void capflip() {
-	int capsrc;
-	capsrc=DISPCAPCNT_SRC_A_3D;
-	VRAMCNT_A = VRAMCNT_A_LCDC;
-	VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
-	DISPCAPCNT=DISPCAPCNT_WRITE_VRAM_A|DISPCAPCNT_SIZE_256x192
-	|capsrc|DISPCAPCNT_SRC_A|DISPCAPCNT_ENABLE;
-	s16* bg = (u16*)(VRAM_B_OFFS_0K);
-	s16* img = (u16*)(VRAM_LCDC_A);
-	for( int i = 0; i < 256*192; i+=3 ) {
-		bg[i] = img[256*192-i];
+	if( cubemode == 1 ) {
+		int capsrc;
+		capsrc=DISPCAPCNT_SRC_A_3D;
+		VRAMCNT_A = VRAMCNT_A_LCDC;
+		VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
+		DISPCAPCNT=DISPCAPCNT_WRITE_VRAM_A|DISPCAPCNT_SIZE_256x192
+		|capsrc|DISPCAPCNT_SRC_A|DISPCAPCNT_ENABLE;
+		s16* bg = (u16*)(VRAM_A_OFFS_0K);
+		s16* img = (u16*)(VRAM_LCDC_A);
+		u16 tmp;
+		for( int i = 0; i < 256*192; i+=3 ) {
+			tmp = img[256*192-i];
+			bg[i] = tmp <= 0x7FFF ? 0x8000 : tmp;
+		}
 	}
 }
 
@@ -33,25 +41,8 @@ void effect6_init() {
 	memset( master_bright_sub, (1<<6) | (16), 2 );
 		
 	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
-
-	s16* bg = (u16*)(VRAM_B_OFFS_0K);	
-	for( int i = 0; i < 256*192; i++ ) {
-		u16 c = ((i+1)%3) == 0 ? 5 : 0;
-		c = ((i+2)%3) == 0 ? 2 : 0;
-		bg[i] = c<<10|c<<5|c|0x8000;
-	}
 	
 	VRAMCNT_A = VRAMCNT_A_LCDC;
-	VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
-	DISPCNT_B = DISPCNT_MODE_5 | DISPCNT_BG2_ON | DISPCNT_ON;
-	BG2CNT_B = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
-	BG2CNT_B = (BG2CNT_B&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
-	BG2PA_B = (1 << 8);
-	BG2PB_B = 0;
-	BG2PC_B = 0;
-	BG2PD_B = (1 << 8);
-	BG2X_B = 0;
-	BG2Y_B = 0;
 
 	int dx = icos(128)/26.5;
 	int dy = isin(128)/26.5;
@@ -76,7 +67,7 @@ void effect6_init() {
 	DSInit3D();
 	DSViewport(0,0,255,191);
 
-	DSSetControl(DS_ANTIALIAS);
+	DSSetControl(DS_TEXTURING|DS_ANTIALIAS);
 	DSClearParams(26,26,26,0,63);
 
 	DSSetPaletteOffset(0,DS_TEX_FORMAT_PAL4);
@@ -102,9 +93,45 @@ void effect6_init() {
 	load8bVRAMIndirect( "nitro:/gfx/aocubes.img.bin", VRAM_A_OFFS_0K,256*192*2);
 	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", PALRAM_A,256*2);
 	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", aocubepal,25*2);
+
+	if( cubemode == 1 ) {
+		// Other version.
+		s16* bg = (u16*)(VRAM_A_OFFS_0K);
+		for( int i = 0; i < 256*192; i++ ) {
+			u16 c = ((i+1)%3) == 0 ? 5 : 0;
+			c = ((i+2)%3) == 0 ? 2 : 0;
+			bg[i] = c<<10|c<<5|c|0x8000;
+		}
+
+				
+		DISPCNT_A |= DISPCNT_BG3_ON;
+		BG3CNT_A = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
+		BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
+		BG0CNT_A = (BG0CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
+		BG3PA_A = dx;
+		BG3PB_A = dy;
+		BG3PC_A = -dx;
+		BG3PD_A = dy;
+		BG3X_A = 0;
+		BG3Y_A = 0;
+
+		int dx = icos(128)/26.5;
+    int dy = isin(128)/26.5;
+		BG3PA_A=dx;
+		BG3PB_A=dy;
+		BG3PC_A=-dy;
+		BG3PD_A=dx;
+		BG3X_A=-128*dx-92*dy+(128<<8)+7000;
+		BG3Y_A=+128*dy-92*dx+(92<<8)+5000;
+	}
 }
 
 void voxelSpiral(int t) {
+	// Kludge
+	static int lt = 0;
+	lt++;
+	t = lt;
+	
 	static uint8_t ri = 0;
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
@@ -116,7 +143,7 @@ void voxelSpiral(int t) {
 		SetVoxelAt(&block2,1,1,i,rainbowTable[(ri+30)%255]|0x8000);
 	}
 	RefreshVoxelBlock(&block2);
-
+	
 	// Move blocks
 	if(t%4==0) {
 		ScrollVoxelBlockByZ(&block);
@@ -179,18 +206,21 @@ uint8_t effect6_update( uint32_t t ) {
 	capflip();
 	voxelSpiral(t);
 
-	static u16 colpal[25];
-	u16 col;
-	for( int i = 0; i < 25; i++ ) {
-		s16 val = (isin((t)<<8)>>9)+10;
-		col = aocubepal[i];
-		col = col & 0x1F;
-		col = col + val;
-		col = col <= 31 ? col : 31;
-		col = col | col << 5 | col << 10;
-		colpal[i] = col;
+
+	if( cubemode != 1 ) {
+		static u16 colpal[25];
+		u16 col;
+		for( int i = 0; i < 25; i++ ) {
+			s16 val = (isin((t)<<7)>>9)+10;
+			col = aocubepal[i];
+			col = col & 0x1F;
+			col = col + val;
+			col = col <= 31 ? col : 31;
+			col = col | col << 5 | col << 10;
+			colpal[i] = col;
+		}
+		dmaCopyHalfWords( 0, colpal, PALRAM_A, 2*25 );
 	}
-	dmaCopyHalfWords( 0, colpal, PALRAM_A, 2*25 );
 	
 	// Fadein
 	if( t <= 16 ) {

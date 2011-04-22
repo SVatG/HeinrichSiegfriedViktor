@@ -48,18 +48,18 @@ int main()
 
 	// Main loop
 	InitPensOnSecondaryScreen(true);
-	//InitTruchet(t);
-	effect5_init();
+	InitTruchet(t);
+// 	effect6_init();
 
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen"))
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"nitro:/rainbows.pen"))
 	ClearPenData(pens,sizeof(pens)/sizeof(*pens));
 
 	while( t<60*60 ) {
-		//Truchet();
+// 		Truchet();
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
-		//Truchet(t);
-		effect5_update(t);
+		Truchet(t);
+		effect6_update(t);
 		
  		swiWaitForVBlank();
 	}

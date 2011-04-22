@@ -57,6 +57,7 @@ void effect5_init() {
 
 int ballRound = 0;
 void MetaBallsA(int t) {
+	loadVRAMIndirect( "nitro:/gfx/metaballs.pal.bin", PALRAM_A,256*2);
 	static uint8_t ri = 0;
 	ri++;
 	uint8_t tti = 0;
