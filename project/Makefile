@@ -26,7 +26,7 @@ CC = $(DEVKITARM)/bin/arm-eabi-gcc
 AS = $(DEVKITARM)/bin/arm-eabi-as
 LD = $(DEVKITARM)/bin/arm-eabi-gcc
 
-CFLAGS = -std=gnu99 -Os -mcpu=arm9e -mtune=arm9e -ffast-math \
+CFLAGS = -std=gnu99 -O3 -mcpu=arm9e -mtune=arm9e -ffast-math \
 -mthumb -mthumb-interwork -I$(DEVKITPRO)/libnds/include -DARM9 $(DEFINES) \
 -D__NITRO__ -DBINARY_NAME=\"$(NAME).nds\" -DDEBUG
 CFLAGSARM = -std=gnu99 -Os -mcpu=arm9e -mtune=arm9e -ffast-math \

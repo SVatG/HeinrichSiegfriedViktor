@@ -1,6 +1,6 @@
 #include "VoxelBlock.h"
 #include "BoxBlock.h"
-#include "DS3D.h"
+#include "DS3D/DS3D.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -39,35 +39,36 @@ void DrawBoxBlock(BoxBlock *self) {
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
 	
 	DSMatrixMode(DS_POSITION);
-	DSScalef32(DSf32(256),DSf32(256),DSf32(256));
+	DSScalef32(DSf32(512),DSf32(512),DSf32(512));
 
+	DISP3DCNT|=DS_OUTLINE;
 	DSPolygonAttributes(DS_POLY_CULL_NONE|DS_POLY_LIGHT0|DS_POLY_ALPHA(31));
-	DSLight3f(0,0xCCCC,-1,-10,-1);
+	DSLight3f(0,0xDDDD,-1,-10,-1);
 
 	DSBegin(DS_QUADS);
 
 	int boxsize = 0;
-	
+	int boxspace = 8;
 	Box *box=self->boxes;
-	for(int z=0;z<self->depth*16;z+=16)
-	for(int y=0;y<self->height*16;y+=16)
-	for(int x=0;x<self->width*16;x+=16)
+	for(int z=0;z<self->depth*boxspace;z+=boxspace)
+	for(int y=0;y<self->height*boxspace;y+=boxspace)
+	for(int x=0;x<self->width*boxspace;x+=boxspace)
 	{
 		if(IsBoxFilled(box->colour)) {
 			boxsize = box->size;
 			DSMaterialDiffuseAndAmbient(box->colour,box->colour);
 			DSNormal3f(-1,0,0);
-			DrawBoxFace(x,y,z,0,boxsize,0,0,0,boxsize);
+			DrawBoxFace(x-boxsize/2,y-boxsize/2,z-boxsize/2,0,boxsize,0,0,0,boxsize);
 			DSNormal3f(1,0,0);
-			DrawBoxFace(x+boxsize,y,z,0,boxsize,0,0,0,boxsize);
+			DrawBoxFace(x+boxsize/2,y-boxsize/2,z-boxsize/2,0,boxsize,0,0,0,boxsize);
 			DSNormal3f(0,-1,0);
-			DrawBoxFace(x,y,z,0,0,boxsize,boxsize,0,0);
+			DrawBoxFace(x-boxsize/2,y-boxsize/2,z-boxsize/2,0,0,boxsize,boxsize,0,0);
 			DSNormal3f(0,1,0);
-			DrawBoxFace(x,y+boxsize,z,0,0,boxsize,boxsize,0,0);
+			DrawBoxFace(x-boxsize/2,y+boxsize/2,z-boxsize/2,0,0,boxsize,boxsize,0,0);
 			DSNormal3f(0,0,-1);
-			DrawBoxFace(x,y,z,boxsize,0,0,0,boxsize,0);
+			DrawBoxFace(x-boxsize/2,y-boxsize/2,z-boxsize/2,boxsize,0,0,0,boxsize,0);
 			DSNormal3f(0,0,1);
-			DrawBoxFace(x,y,z+boxsize,boxsize,0,0,0,boxsize,0);
+			DrawBoxFace(x-boxsize/2,y-boxsize/2,z+boxsize/2,boxsize,0,0,0,boxsize,0);
 		}
 
 		box++;

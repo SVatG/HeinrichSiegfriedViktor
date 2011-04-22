@@ -1,11 +1,19 @@
-#include "DS3D/Utils.h"
+#include "Utils.h"
 #include "DS3D/DS3D.h"
 #include "BoxBlock.h"
 #include "Hardware.h"
 #include "Loader.h"
 #include "RainbowTable.h"
 
+typedef struct ball {
+	int x;
+	int y;
+	int z;
+	int c;
+} ball;
+
 BoxBlock balls;
+ball ballp[3];
 
 void effect5_init() {
 	uint16_t* master_bright = (uint16_t*)(0x400006C);
@@ -13,51 +21,18 @@ void effect5_init() {
 	uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
 	memset( master_bright_sub, (1<<6) | (16), 2 );
 
-	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
-
-	VRAMCNT_A = VRAMCNT_A_LCDC;
-/*	VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
-	DISPCNT_B = DISPCNT_MODE_5 | DISPCNT_BG2_ON | DISPCNT_ON;
-	BG2CNT_B = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
-	BG2CNT_B = (BG2CNT_B&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
-	BG2PA_B = (1 << 8);
-	BG2PB_B = 0;
-	BG2PC_B = 0;
-	BG2PD_B = (1 << 8);
-	BG2X_B = 0;
-	BG2Y_B = 0;
-
-	int dx = icos(128)/26.5;
-	int dy = isin(128)/26.5;
-	BG2PA_B = dx;
-	BG2PB_B = dy;
-	BG2PC_B = -dy;
-	BG2PD_B = dx;
-	BG2X_B = 4000;
-	BG2Y_B = 10000;*/
+	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_ON;
 
 	// Set up voxelcubes
-	VRAMCNT_D=VRAMCNT_D_LCDC;
-	VRAMCNT_F=VRAMCNT_F_LCDC;
-
-	loadVRAMIndirect( "nitro:/textures.pal4", VRAM_LCDC_D,16384);
-	
-	for(int i=0;i<16;i++) VRAM_LCDC_F[i]=MakeRGB15(i+16,i+16,i+16);
-
-	VRAMCNT_D=VRAMCNT_D_TEXTURE_OFFS_0K;
-	VRAMCNT_F=VRAMCNT_F_TEXTURE_PALETTE_SLOT_0;
-
 	DSInit3D();
 	DSViewport(0,0,255,191);
 	
 	DSSetControl(DS_ALPHA_BLEND|DS_ANTIALIAS);
 	DSClearParams(26,26,26,0,63);
 
-	DSSetPaletteOffset(0,DS_TEX_FORMAT_PAL4);
-
 	DSMatrixMode(DS_PROJECTION);
 	DSLoadIdentity();
-	DSPerspectivef(100,256.0/192.0,1,1024);
+	DSPerspectivef(45,256.0/192.0,1,1024);
 
 	InitBoxBlock(&balls,26,24,20);
 
@@ -76,22 +51,47 @@ void effect5_init() {
 int ballRound = 0;
 void MetaBallsA(int t) {
 	static uint8_t ri = 0;
+	ri++;
+	uint8_t tti = 0;
+	uint8_t inti = 0;
 	DSMatrixMode(DS_POSITION);
 	DSLoadIdentity();
 
-	float dx = -14+((float)isin(t<<3))/256.0;
-	float dy = -12;
-	float dz = -10;
-	uint16_t c = rainbowTable[++ri]|0x8000;
-	uint16_t d = rainbowTable[(ri+40)%255]|0x8000;
-	uint16_t e = rainbowTable[(ri+90)%255]|0x8000;
-	int det = 0;
+	#define BALLMULT 8
+	
+	ballp[0].x = -14*BALLMULT+(isin(t<<3))/90;
+	ballp[0].y = -12*BALLMULT+(icos(t<<3))/110;
+	ballp[0].z = -10*BALLMULT;
+	ballp[0].c = 1;
+	ballp[1].x = -14*BALLMULT;
+	ballp[1].y = -12*BALLMULT+(icos(t<<3))/80;
+	ballp[1].z = -10*BALLMULT+(isin(t<<4))/100;
+	ballp[1].c = 1;
+	ballp[2].x = -12*BALLMULT+(icos(t<<3))/130;;
+	ballp[2].y = -14*BALLMULT;
+	ballp[2].z = -10*BALLMULT+(isin(t<<4))/100;
+	ballp[2].c = 1;
+	
+	uint32_t det = 0;
+	uint32_t dett = 0;
 	for( int x = 0; x < 26; x++ ) {
 		for( int y = ballRound; y < ballRound+8; y++ ) {
 			for( int z = 0; z < 20; z++ ) {
-				det = ((dx+x)*(dx+x)+(dy+y)*(dy+y)+(dz+z)*(dz+z));
-				if(det<15) {
-					SetBoxAt(&balls,x,y,z,c,15-det);
+				det = 0;
+				for( int i = 0; i < 3; i++ ) {
+					int dx = ballp[i].x+x*BALLMULT;
+					int dy = ballp[i].y+y*BALLMULT;
+					int dz = ballp[i].z+z*BALLMULT;
+					dett = dx*dx+dy*dy+dz*dz;
+					if( dett > BALLMULT*BALLMULT ) {
+						dett = (BALLMULT*BALLMULT*BALLMULT)/dett;
+						det += dett;
+					}
+				}
+				if(det > 0 ) {
+					inti = tti++ + ri;
+					uint16_t cc = rainbowTable[inti]|0x8000;
+					SetBoxAt(&balls,x,y,z,cc,det);
 				}
 				else {
 					SetBoxAt(&balls,x,y,z,0,0);
@@ -105,9 +105,10 @@ void MetaBallsA(int t) {
 	}
 
 	// Move things
+	DSTranslatef(0,0,-15);
+	DSRotateXi(t);
 	DSRotateZi(-t<<2);
 	DSRotateYi(t>>3);
-	DSTranslatef(0,0,-10);
 	DrawBoxBlock(&balls);
 	DSSwapBuffers(0);
 }
