@@ -5,7 +5,8 @@ NAME = rainbows
 OBJS = Main.o Truchet.o Pens.o ARM.o Drawing.o nitrofs.o \
        effect5.o effect6.o BoxBlock.o Loader.o VoxelBlock.o RainbowTable.o \
        DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
-       DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o 
+       DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o \
+			 effect7.o
 
 OBJS7 = Main.arm7.o
 
