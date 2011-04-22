@@ -1,3 +1,5 @@
+// Metaballs
+
 #include <nds.h>
 
 #include "Utils.h"
@@ -17,7 +19,6 @@ typedef struct ball {
 BoxBlock balls;
 ball ballp[3];
 
-uint16_t metaballpal[25];
 void effect5_init() {
 	uint16_t* master_bright = (uint16_t*)(0x400006C);
 	memset( master_bright, (1<<6) | (16), 2 );
@@ -52,7 +53,6 @@ void effect5_init() {
 
 	load8bVRAMIndirect( "nitro:/gfx/metaballs.img.bin", VRAM_A_OFFS_0K,256*192*2);
 	loadVRAMIndirect( "nitro:/gfx/metaballs.pal.bin", PALRAM_A,256*2);
-	loadVRAMIndirect( "nitro:/gfx/metaballs.pal.bin", metaballpal,25*2);
 }
 
 int ballRound = 0;
