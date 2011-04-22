@@ -6,7 +6,7 @@ OBJS = Main.o Truchet.o Pens.o ARM.o Drawing.o nitrofs.o \
        effect5.o effect6.o BoxBlock.o Loader.o VoxelBlock.o RainbowTable.o \
        DS3D/DS3D.o DS3D/Utils.o DS3D/Vector/VectorFixed.o \
        DS3D/Vector/MatrixFixed.o DS3D/Vector/QuaternionFixed.o \
-			 effect7.o
+			 effect7.o effect1.o
 
 OBJS7 = Main.arm7.o
 
@@ -20,7 +20,7 @@ LIBS7 = -L$(DEVKITPRO)/libnds/lib -lnds7 -lmm7
 # nitrofs under /gfx.
 # This needs work so that the images are not remade every time the binary is
 # compiled.
-BITMAPS=gfx/aocubes.bin gfx/metaballs.bin
+BITMAPS=gfx/aocubes.bin gfx/metaballs.bin gfx/unicorn.bin gfx/clouds.bin
 
 # Compiler setup
 CC = $(DEVKITARM)/bin/arm-eabi-gcc
