@@ -1,6 +1,6 @@
 #include "VoxelBlock.h"
 #include "BoxBlock.h"
-#include "DS3D.h"
+#include "DS3D/DS3D.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -37,7 +37,7 @@ void DrawBoxBlock(BoxBlock *self) {
 	DSMatrixMode(DS_POSITION);
 	DSStoreMatrix(0);
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
-	
+
 	DSMatrixMode(DS_POSITION);
 	DSScalef32(DSf32(256),DSf32(256),DSf32(256));
 
@@ -47,7 +47,7 @@ void DrawBoxBlock(BoxBlock *self) {
 	DSBegin(DS_QUADS);
 
 	int boxsize = 0;
-	
+
 	Box *box=self->boxes;
 	for(int z=0;z<self->depth*16;z+=16)
 	for(int y=0;y<self->height*16;y+=16)

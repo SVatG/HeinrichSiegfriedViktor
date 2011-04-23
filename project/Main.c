@@ -4,6 +4,7 @@
 
 #include <nds/ndstypes.h>
 #include <nds/interrupts.h>
+#include <string.h>
 
 // Utilities to make development easier
 #include "Utils.h"
@@ -14,7 +15,9 @@
 // Effects!
 #include "effects.h"
 #include "Truchet.h"
+#include "Radial.h"
 #include "Pens.h"
+#include "ARM.h"
 
 // Sound!
 #include <maxmod9.h>
@@ -25,6 +28,8 @@ static void vblank();
 
 static PenFrame pens[60*60*3];
 
+uint8_t ATTR_DTCM dtcm_buffer[12288];
+
 int main()
 {
 	// Turn on everything.
@@ -32,13 +37,15 @@ int main()
 	irqEnable( IRQ_VBLANK );
 	irqSet(IRQ_VBLANK,vblank);
 
+//	ClaimWRAM();
+
 	// Init NitroFS for data loading.
 	nitroFSInitAdv( BINARY_NAME );
 
 // 	mmInitDefault( "nitro:/zik/music.bin" );
 // 	mmLoad( MOD_LIGHTMUSIC3_SHORT );
 // 	mmStart( MOD_LIGHTMUSIC3_SHORT, MM_PLAY_ONCE );
-	
+
 	#ifdef DEBUG
 	//consoleDemoInit();
 	//iprintf( "Debug mode.\n" );
@@ -48,8 +55,12 @@ int main()
 
 	// Main loop
 	InitPensOnSecondaryScreen(true);
-	InitTruchet(t);
+	//InitTruchet(t);
+	InitRadial();
 	//effect5_init();
+
+	uint8_t *wram=(uint8_t *)0x3000000;
+//	memset(wram,0,128*96);
 
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen"))
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"nitro:/rainbows.pen"))
@@ -58,9 +69,11 @@ int main()
 	while( t<60*60 ) {
 		//Truchet();
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
-		Truchet(t);
+//		memcpy(dtcm_buffer,wram,128*96);
+		RunRadial(t,dtcm_buffer);
+		//Truchet(t);
 		//effect5_update(t);
-		
+
  		swiWaitForVBlank();
 	}
 

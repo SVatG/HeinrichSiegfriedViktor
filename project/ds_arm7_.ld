@@ -5,7 +5,7 @@ ENTRY(_start)
 MEMORY {
 
 	rom	: ORIGIN = 0x08000000, LENGTH = 32M
-	iwram	: ORIGIN = 0x037f8000, LENGTH = 96K	
+	iwram	: ORIGIN = 0x03800000, LENGTH = 64K	
 }
 
 __iwram_start	=	ORIGIN(iwram);
