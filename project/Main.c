@@ -24,6 +24,7 @@ volatile uint32_t t;
 static void vblank();
 
 static PenFrame pens[60*60*3];
+extern int tempImage;
 
 int main()
 {
@@ -38,7 +39,9 @@ int main()
 // 	mmInitDefault( "nitro:/zik/music.bin" );
 // 	mmLoad( MOD_LIGHTMUSIC3_SHORT );
 // 	mmStart( MOD_LIGHTMUSIC3_SHORT, MM_PLAY_ONCE );
-	
+
+	tempImage = malloc(256*256*2);
+
 	#ifdef DEBUG
 	//consoleDemoInit();
 	//iprintf( "Debug mode.\n" );
@@ -49,7 +52,7 @@ int main()
 	// Main loop
 	InitPensOnSecondaryScreen(true);
 // 	InitTruchet(t);
-	effect1_init();
+	effect6_init();
 
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen"))
 	if(!LoadPenData(pens,sizeof(pens)/sizeof(*pens),"nitro:/rainbows.pen"))
@@ -59,7 +62,7 @@ int main()
 // 		Truchet();
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
 // 		Truchet(t);
-		effect1_update(t);
+		effect6_update(t);
 		
  		swiWaitForVBlank();
 	}

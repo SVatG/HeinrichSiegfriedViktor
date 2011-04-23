@@ -20,7 +20,8 @@ LIBS7 = -L$(DEVKITPRO)/libnds/lib -lnds7 -lmm7
 # nitrofs under /gfx.
 # This needs work so that the images are not remade every time the binary is
 # compiled.
-BITMAPS=gfx/aocubes.bin gfx/metaballs.bin gfx/unicorn.bin gfx/clouds.bin
+BITMAPS=gfx/aocubes.bin gfx/metaballs.bin gfx/unicorn.bin gfx/clouds.bin \
+	gfx/svatg.bin
 
 # Compiler setup
 CC = $(DEVKITARM)/bin/arm-eabi-gcc

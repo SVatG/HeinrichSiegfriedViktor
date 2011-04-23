@@ -20,7 +20,7 @@
 
 // Buffer for VRAM image load functions. It would be a good idea not to try to
 // load images bigger than 256x256.
-uint16_t tempImage[256*256*2];
+uint16_t* tempImage;
 
 // Keep in mind that loadVRAMIndirect and loadImage make sure the alpha bit
 // is set.

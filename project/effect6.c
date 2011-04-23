@@ -17,7 +17,6 @@ void capflip() {
 		int capsrc;
 		capsrc=DISPCAPCNT_SRC_A_3D;
 		VRAMCNT_A = VRAMCNT_A_LCDC;
-		VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
 		DISPCAPCNT=DISPCAPCNT_WRITE_VRAM_A|DISPCAPCNT_SIZE_256x192
 		|capsrc|DISPCAPCNT_SRC_A|DISPCAPCNT_ENABLE;
 		s16* bg = (u16*)(VRAM_A_OFFS_0K);
@@ -94,7 +93,13 @@ void effect6_init() {
 	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", PALRAM_A,256*2);
 	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", aocubepal,25*2);
 
+	VRAMCNT_C = VRAMCNT_C_BG_VRAM_A_OFFS_128K;
+
+	load8bVRAMIndirect( "nitro:/gfx/svatg.img.bin", VRAM_A_OFFS_128K,60*256);
+	loadVRAMIndirect( "nitro:/gfx/svatg.pal.bin", PALRAM_A,256*2);
+
 	if( cubemode == 1 ) {
+		
 		// Other version.
 		s16* bg = (u16*)(VRAM_A_OFFS_0K);
 		for( int i = 0; i < 256*192; i++ ) {
@@ -102,18 +107,27 @@ void effect6_init() {
 			c = ((i+2)%3) == 0 ? 2 : 0;
 			bg[i] = c<<10|c<<5|c|0x8000;
 		}
-
 				
-		DISPCNT_A |= DISPCNT_BG3_ON;
+		DISPCNT_A |= DISPCNT_BG3_ON | DISPCNT_BG2_ON;
 		BG3CNT_A = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
-		BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
-		BG0CNT_A = (BG0CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
+		BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
+		BG0CNT_A = (BG0CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_2;
 		BG3PA_A = dx;
 		BG3PB_A = dy;
 		BG3PC_A = -dx;
 		BG3PD_A = dy;
 		BG3X_A = 0;
 		BG3Y_A = 0;
+
+		// Background
+		BG2CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_128K;
+		BG2CNT_A = (BG2CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
+		BG2PA_A = (1 << 8);
+		BG2PB_A = 0;
+		BG2PC_A = 0;
+		BG2PD_A = (1 << 8);
+		BG2X_A = 0;
+		BG2Y_A = -32000;
 
 		int dx = icos(128)/26.5;
     int dy = isin(128)/26.5;
