@@ -25,7 +25,7 @@ void effect1_init() {
 	BG3PD_A = (1 << 8);
 	BG3X_A = 0;
 	BG3Y_A = 0;
-
+	
 	BG2CNT_A = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_TRANSPARENT | BGxCNT_BITMAP_BASE_128K;
 	BG2CNT_A = (BG2CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
 	BG2PA_A = icos(-800)>>4;
@@ -36,6 +36,7 @@ void effect1_init() {
 	BG2Y_A = -30000;
 
 	loadImage( "nitro:/gfx/clouds.img.bin", VRAM_A_OFFS_0K,256*192*2);
+	loadVRAMIndirect( "nitro:/gfx/clouds.img.bin", VRAM_A_OFFS_128K,256*192*2);
 
 	VRAMCNT_A = VRAMCNT_A_OBJ_VRAM_A;
 
@@ -44,28 +45,6 @@ void effect1_init() {
 	arr_a = loadSpriteA( "nitro:/gfx/unicorn.img.bin" );
 	arr_b = arr_a;
 	arr_c = arr_a;
-	
-// 	oamSet(
-// 		&oamMain, 1,
-// 		121, 10,
-// 		1, 0,
-// 		SpriteSize_64x64,
-// 		SpriteColorFormat_256Color,
-// 		labels_l,
-// 		-1, false, false, false, false, false
-// 	);
-// 	oamSet(
-// 		&oamMain, 2,
-// 		185, 10,
-// 		1, 0,
-// 		SpriteSize_64x64,
-// 		SpriteColorFormat_256Color,
-// 		labels_r,
-// 		-1, false, false, false, false, false
-// 	);
-// 	for( int i = 0; i < 2000; i++ ) {
-// 		
-// 	}
 }
 
 int arra_m = 2;
