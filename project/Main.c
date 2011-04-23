@@ -16,6 +16,7 @@
 #include "effects.h"
 #include "Truchet.h"
 #include "Radial.h"
+#include "Tunnel.h"
 #include "Pens.h"
 #include "ARM.h"
 
@@ -56,7 +57,8 @@ int main()
 	// Main loop
 	InitPensOnSecondaryScreen(true);
 	//InitTruchet(t);
-	InitRadial();
+	//InitRadial();
+	InitTunnel();
 	//effect5_init();
 
 	uint8_t *wram=(uint8_t *)0x3000000;
@@ -70,7 +72,8 @@ int main()
 		//Truchet();
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
 //		memcpy(dtcm_buffer,wram,128*96);
-		RunRadial(t,dtcm_buffer);
+//		RunRadial(t,dtcm_buffer);
+		RunTunnel(t);
 		//Truchet(t);
 		//effect5_update(t);
 
