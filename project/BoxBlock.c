@@ -37,7 +37,7 @@ void DrawBoxBlock(BoxBlock *self) {
 	DSMatrixMode(DS_POSITION);
 	DSStoreMatrix(0);
 	DSTranslatef32(-DSf32(self->width)/2,-DSf32(self->height)/2,-DSf32(self->depth)/2);
-	
+
 	DSMatrixMode(DS_POSITION);
 	DSScalef32(DSf32(512),DSf32(512),DSf32(512));
 

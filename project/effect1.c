@@ -8,12 +8,8 @@ u16* arr_a;
 u16* arr_b;
 u16* arr_c;
 void effect1_init() {
-	u16* master_bright_sub = (u16*)(0x400106C);
-	u16* master_bright = (u16*)(0x400006C);
-	memset( master_bright, (1<<6) | 0, 2 );
-	memset( master_bright_sub, (1<<6) | 0, 2 );
 		
-	DISPCNT_A = DISPCNT_MODE_5  | DISPCNT_BG2_ON | DISPCNT_BG3_ON | DISPCNT_OBJ_ON | DISPCNT_ON;
+	DISPCNT_A = DISPCNT_MODE_5 | DISPCNT_BG2_ON | DISPCNT_BG3_ON | DISPCNT_OBJ_ON | DISPCNT_ON;
 	VRAMCNT_D = VRAMCNT_D_BG_VRAM_A_OFFS_128K;
 	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
 	

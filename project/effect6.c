@@ -24,21 +24,16 @@ void capflip() {
 		u16 tmp;
 		for( int i = 0; i < 256*192; i+=3 ) {
 			tmp = img[256*192-i];
-			bg[i] = tmp <= 0x7FFF ? 0x8000 : tmp;
+			bg[i] = tmp <= 0x7FFF ? 0xFFFF : tmp;
 		}
 	}
 }
 
 VoxelBlock block;
 VoxelBlock block2;
-u16 aocubepal[25];
+u16 aocubepal[512];
 
 void effect6_init() {
-	uint16_t* master_bright = (uint16_t*)(0x400006C);
-	memset( master_bright, (1<<6) | (16), 2 );
-	uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
-	memset( master_bright_sub, (1<<6) | (16), 2 );
-		
 	DISPCNT_A=DISPCNT_MODE_5|DISPCNT_3D|DISPCNT_BG0_ON|DISPCNT_BG3_ON|DISPCNT_ON;
 	
 	VRAMCNT_A = VRAMCNT_A_LCDC;
@@ -80,7 +75,9 @@ void effect6_init() {
 
 	// Background
 	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
-	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
+	VRAMCNT_C = VRAMCNT_C_BG_VRAM_A_OFFS_128K;
+	
+	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_TRANSPARENT | BGxCNT_BITMAP_BASE_0K;
 	BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
 	BG3PA_A = (1 << 8);
 	BG3PB_A = 0;
@@ -89,23 +86,28 @@ void effect6_init() {
 	BG3X_A = 0;
 	BG3Y_A = 0;
 
-	load8bVRAMIndirect( "nitro:/gfx/aocubes.img.bin", VRAM_A_OFFS_0K,256*192*2);
-	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", PALRAM_A,256*2);
-	loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", aocubepal,25*2);
-
-	VRAMCNT_C = VRAMCNT_C_BG_VRAM_A_OFFS_128K;
-
-	load8bVRAMIndirect( "nitro:/gfx/svatg.img.bin", VRAM_A_OFFS_128K,60*256);
-	loadVRAMIndirect( "nitro:/gfx/svatg.pal.bin", PALRAM_A,256*2);
-
+	if( cubemode == 0 ) {
+		load8bVRAMIndirect( "nitro:/gfx/aocubes.img.bin", VRAM_A_OFFS_0K,256*192*2);
+		loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", PALRAM_A,256*2);
+		loadVRAMIndirect( "nitro:/gfx/aocubes.pal.bin", aocubepal,256*2);
+	}
+	else {
+		uint16_t* bg = VRAM_A_OFFS_128K;
+		for( int i = 0; i < 256*256; i++ ) {
+			bg[i] = 0;
+		}
+		load8bVRAMIndirect( "nitro:/gfx/svatg.img.bin", VRAM_A_OFFS_128K,256*256);
+		loadVRAMIndirect( "nitro:/gfx/svatg.pal.bin", PALRAM_A,256*2);
+	}
+	
 	if( cubemode == 1 ) {
 		
 		// Other version.
 		s16* bg = (u16*)(VRAM_A_OFFS_0K);
 		for( int i = 0; i < 256*192; i++ ) {
 			u16 c = ((i+1)%3) == 0 ? 5 : 0;
-			c = ((i+2)%3) == 0 ? 2 : 0;
-			bg[i] = c<<10|c<<5|c|0x8000;
+			c = ((i+2)%3) == 0 ? 26 : 23;
+			bg[i] = 0|(int)(c*0.5)<<5|c|0x8000;
 		}
 				
 		DISPCNT_A |= DISPCNT_BG3_ON | DISPCNT_BG2_ON;
@@ -127,7 +129,7 @@ void effect6_init() {
 		BG2PC_A = 0;
 		BG2PD_A = (1 << 8);
 		BG2X_A = 0;
-		BG2Y_A = -32000;
+		BG2Y_A = -31500;
 
 		int dx = icos(128)/26.5;
     int dy = isin(128)/26.5;
@@ -225,23 +227,15 @@ uint8_t effect6_update( uint32_t t ) {
 		static u16 colpal[25];
 		u16 col;
 		for( int i = 0; i < 25; i++ ) {
-			s16 val = (isin((t)<<7)>>9)+10;
+			s16 val = (isin(t*53*2)>>9)+10;
 			col = aocubepal[i];
 			col = col & 0x1F;
 			col = col + val;
 			col = col <= 31 ? col : 31;
-			col = col | col << 5 | col << 10;
+			col =  (int)(col*0.8) | (int)(col*0.9) << 5 | col << 10;
 			colpal[i] = col;
 		}
 		dmaCopyHalfWords( 0, colpal, PALRAM_A, 2*25 );
-	}
-	
-	// Fadein
-	if( t <= 16 ) {
-		uint16_t* master_bright = (uint16_t*)(0x400006C);
-		memset( master_bright, (1<<6) | (16-t), 2 );
-		uint16_t* master_bright_sub = (uint16_t*)(0x400106C);
-		memset( master_bright_sub, (1<<6) | (16-t), 2 );
 	}
 	
 	return 0;

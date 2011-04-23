@@ -1,3 +1,6 @@
+#include <nds.h>
+
+#include "Loader.h"
 #include "Utils.h"
 #include <nds/registers_alt.h>
 
@@ -5,7 +8,7 @@
 
 // Cap/flip
 int line = 0;
-void capflip() {
+void capflip2() {
 	int capsrc;
 	static int flip = 0;
 	capsrc=DISPCAPCNT_SRC_A_SCREEN;
@@ -79,26 +82,22 @@ void effect0_init() {
 	BG3X_A= 0;
 	BG3Y_A= 0;
 	
-	load8bVRAMIndirect( "nitro:/gfx/thismana.img.bin", VRAM_B,256*256);
-	loadVRAMIndirect( "nitro:/gfx/thismana.pal.bin", PALRAM_B,256*2);
 
 	load8bVRAMIndirect( "nitro:/gfx/stars.img.bin", VRAM_A+256*128*2,256*256);
 	loadVRAMIndirect( "nitro:/gfx/stars.pal.bin", PALRAM_A,256*2);
 
-// 	irqSet( IRQ_HBLANK, hblank_eff0 );
-// 	irqEnable( IRQ_HBLANK );
 }
 
 s16 colpos_eff0 = 0;
 void updatecol() {
-	dmaCopyHalfWords( 0, rainbowtable + colpos_eff0, PALRAM_A+1, 2 );
-	dmaCopyHalfWords( 0, rainbowtable + ((colpos_eff0 + 128)%256), PALRAM_A+2, 2 );
+	dmaCopyHalfWords( 0, rainbowTable + colpos_eff0, PALRAM_A+1, 2 );
+	dmaCopyHalfWords( 0, rainbowTable + ((colpos_eff0 + 128)%256), PALRAM_A+2, 2 );
 	colpos_eff0 = (colpos_eff0 + 1) % 256;
 }
 
 u8 effect0_update( u32 t ) {
 
-	capflip();
+	capflip2();
 
 	int dx = icos(t*4)>>2;
 	int dy = isin(t*4)>>2;
@@ -119,7 +118,7 @@ u8 effect0_update( u32 t ) {
 
 
 void effect0_destroy() {
-	BLEND_CR = BLEND_NONE;
-	SUB_BLEND_CR = BLEND_NONE;
+// 	BLEND_CR = BLEND_NONE;
+// 	SUB_BLEND_CR = BLEND_NONE;
 // 	irqDisable( IRQ_HBLANK );
 }

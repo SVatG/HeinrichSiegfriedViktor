@@ -1,38 +1,19 @@
+#include <nds.h>
+
 #include "Utils.h"
-#include <nds/registers_alt.h>
+#include "RainbowTable.h"
+#include "Loader.h"
 
-int prevtext5;
+u16* unicorna;
+int showmode = 0;
 void effect4_init() {
-	u16* master_bright = (u16*)(0x400006C);
-	memset( master_bright, (1<<7) | 16, 2 );
-	prevtext5 = -1;
 
-	DISPCNT_B = DISPCNT_MODE_5 | DISPCNT_BG2_ON | DISPCNT_ON;
-	VRAMCNT_C = VRAMCNT_C_BG_VRAM_B;
+	DISPCNT_A = DISPCNT_MODE_5 | DISPCNT_BG3_ON | DISPCNT_OBJ_ON | DISPCNT_ON;
+	VRAMCNT_D = VRAMCNT_D_BG_VRAM_A_OFFS_128K;
+	VRAMCNT_B = VRAMCNT_B_BG_VRAM_A_OFFS_0K;
 
-	BG2CNT_B = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_SCREEN_BASE(0);
-	BG2CNT_B = (BG2CNT_B&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
-	BG2PA_B = (1 << 8);
-	BG2PB_B = 0;
-	BG2PC_B = 0;
-	BG2PD_B = (1 << 8);
-	BG2X_B = 0;
-	BG2Y_B = 0;
-
-	DISPCNT_A = DISPCNT_MODE_5 | DISPCNT_BG2_ON | DISPCNT_BG3_ON | DISPCNT_ON;
-	VRAMCNT_A = VRAMCNT_A_BG_VRAM_A_OFFS_0K;
-	
-	BG2CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_BITMAP_BASE_64K;
-	BG2CNT_A = (BG2CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
-	BG2PA_A = (1 << 8);
-	BG2PB_A = 0;
-	BG2PC_A = 0;
-	BG2PD_A = (1 << 8);
-	BG2X_A = 0;
-	BG2Y_A = 0;
-
-	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_8 | BGxCNT_OVERFLOW_TRANSPARENT | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_BITMAP_BASE_0K;
-	BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_0;
+	BG3CNT_A = BGxCNT_EXTENDED_BITMAP_16 | BGxCNT_BITMAP_SIZE_256x256 | BGxCNT_OVERFLOW_WRAP | BGxCNT_BITMAP_BASE_0K;
+	BG3CNT_A = (BG3CNT_A&~BGxCNT_PRIORITY_MASK)|BGxCNT_PRIORITY_1;
 	BG3PA_A = (1 << 8);
 	BG3PB_A = 0;
 	BG3PC_A = 0;
@@ -40,77 +21,74 @@ void effect4_init() {
 	BG3X_A = 0;
 	BG3Y_A = 0;
 
-	load8bVRAMIndirect( "nitro:/gfx/empty.img.bin",VRAM_A,256*256);
-}
+	if( showmode == 1 ) {
+		loadImage( "nitro:/gfx/eis.img.bin", VRAM_A_OFFS_0K,256*192*2);
+		loadVRAMIndirect( "nitro:/gfx/eis.img.bin", VRAM_A_OFFS_128K,256*192*2);
 
-void loadText2(int n)
-{
-	switch(n)
-	{
-		case 0:
-			load8bVRAMIndirect( "nitro:/gfx/greets_k2.img.bin",VRAM_A,256*192);
-		break;
+		VRAMCNT_A = VRAMCNT_A_OBJ_VRAM_A;
 
-		case 1:
-			load8bVRAMIndirect( "nitro:/gfx/greets_chm.img.bin",VRAM_A,256*192);
-		break;
+		oamInit(&oamMain, SpriteMapping_1D_128, false);
+		loadVRAMIndirect("nitro:/gfx/unicorn.pal.bin", SPRITE_PALETTE, 512);
+		unicorna = loadSpriteA( "nitro:/gfx/unicorn.img.bin" );
+	}
+	else {
+		loadImage( "nitro:/gfx/kirsche.img.bin", VRAM_A_OFFS_0K,256*192*2);
+		loadVRAMIndirect( "nitro:/gfx/kirsche.img.bin", VRAM_A_OFFS_128K,256*192*2);
 
-		case 2:
-			load8bVRAMIndirect( "nitro:/gfx/greets_hg.img.bin",VRAM_A,256*192);
-		break;
+		VRAMCNT_A = VRAMCNT_A_OBJ_VRAM_A;
 
-		case 3:
-			load8bVRAMIndirect( "nitro:/gfx/greets_brs.img.bin",VRAM_A,256*192);
-		break;
-
-		case 4:
-			load8bVRAMIndirect( "nitro:/gfx/greets_mod.img.bin",VRAM_A,256*192);
-		break;
-
-		case 5:
-			load8bVRAMIndirect( "nitro:/gfx/greets_nectarine.img.bin",VRAM_A,256*192);
-		break;
-
-		case 6:
-			load8bVRAMIndirect( "nitro:/gfx/greets_rno.img.bin",VRAM_A,256*192);
-		break;
+		oamInit(&oamMain, SpriteMapping_1D_128, false);
+		loadVRAMIndirect("nitro:/gfx/unicorn.pal.bin", SPRITE_PALETTE, 512);
+		unicorna = loadSpriteA( "nitro:/gfx/unicorn.img.bin" );
 	}
 }
 
-int spos;
 u8 effect4_update( u32 t ) {
-	int text;
-	text = t / 102;
-	if( text != prevtext5 ) {
-		spos = -44000;
-		prevtext5 = text;
-		loadText2( text );
-	}
-	if( t == 0 ) {
-		load8bVRAMIndirect( "nitro:/gfx/greets1.img.bin",VRAM_A_OFFS_64K,256*192);
-		loadVRAMIndirect( "nitro:/gfx/greets1.pal.bin", PALRAM_A,256*2);
-		load8bVRAMIndirect( "nitro:/gfx/greets2.img.bin",VRAM_B,256*192);
-		loadVRAMIndirect( "nitro:/gfx/greets2.pal.bin", PALRAM_B,256*2);
-	}
+	int swoop = (t<<13)/50;
+	if( showmode == 1 ) {
+		oamSet(
+			&oamMain, 1,
+			120, 25,
+			1, 0,
+			SpriteSize_64x64,
+			SpriteColorFormat_256Color,
+			unicorna,
+			1, true, false, false, false, false
+		);
 
-	BG2X_B = -t*2000;
-	spos += 1000;
-
-	BG3Y_A = spos;
-	
-	if( t == 720 ) {
-		return( 1 );
+		oamRotateScale(
+			&oamMain,
+			1,
+			isin(swoop)>>3,
+			165-(isin(swoop)>>7),
+			165-(isin(swoop)>>7)
+		);
 	}
+	else {
+		oamSet(
+			&oamMain, 1,
+			10, 25,
+			1, 0,
+			SpriteSize_64x64,
+			SpriteColorFormat_256Color,
+			unicorna,
+			1, true, false, false, false, false
+		);
 
-	if( t <= 16 ) {
-		u16* master_bright = (u16*)(0x400006C);
-		memset( master_bright, (1<<7) | (16-t), 2 );
+		oamRotateScale(
+			&oamMain,
+			1,
+			isin(swoop)>>3,
+			-165+(isin(swoop)>>7),
+			165-(isin(swoop)>>7)
+		);
 	}
+	oamUpdate(&oamMain);
 	
 	return( 0 );
 }
 
 
 void effect4_destroy() {
-	
+	irqDisable( IRQ_HBLANK );
 }

@@ -12,7 +12,7 @@ void loadImage(char* path, uint16_t* buffer, uint32_t size) {
 	close( fd );
 
 	// Ensure alpha bit is set
-	for( int i = 0; i < size; i++ ) {
+	for( int i = 0; i < size/2; i++ ) {
 		buffer[i] |= BIT(15);
 	}
 }
@@ -24,7 +24,9 @@ void loadVRAMIndirect(char* path, uint16_t* vramPos, uint32_t size) {
 	read( fd, tempImage, size );
 	close( fd );
 
- 	dmaCopy( tempImage, vramPos, size );
+ 	for( int i = 0; i < size/2; i++ ) {
+		vramPos[i] = tempImage[i];
+	}
 }
 
 // Load a single 8bit image into VRAM at a specified position by first loading
@@ -34,7 +36,9 @@ void load8bVRAMIndirect(char* path, uint16_t* vramPos, uint32_t size) {
 	read( fd, tempImage, size );
 	close( fd );
 
- 	dmaCopy( (uint8_t*)tempImage, vramPos, size );
+	for( int i = 0; i < size; i++ ) {
+		vramPos[i] = tempImage[i];
+	}
 }
 
 

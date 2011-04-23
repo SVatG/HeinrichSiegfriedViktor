@@ -11,6 +11,8 @@ static int startframe;
 static iquat_t rot;
 static ivec3_t pos;
 
+int hasInit = 0;
+
 void InitTruchet(int frame)
 {
 	DISPCNT_A=DISPCNT_MODE_0|DISPCNT_ON|DISPCNT_3D|DISPCNT_BG0_ON;
@@ -18,8 +20,8 @@ void InitTruchet(int frame)
 	DSInit3D();
 	DSViewport(0,0,255,191);
 
-	DSSetControl(DS_TEXTURING|DS_ANTIALIAS|DS_FOG|DS_TEXTURING);
-	DSClearParams(0,0,0,31,63);
+	DSSetControl(DS_TEXTURING|DS_ANTIALIAS|DS_FOG);
+	DSClearParams(14,31,31,31,63);
 
 	DSMatrixMode(DS_PROJECTION);
 	DSLoadIdentity();
@@ -42,6 +44,10 @@ int32_t fakesin(int32_t x)
 
 void Truchet(int frame)
 {
+	if(hasInit==0) {
+		hasInit = 1;
+		InitTruchet(frame);
+	}
 	int t=frame-startframe;
 
 /*	rot=iquatmul(rot,iquatrotation(-40,ivec3(F(1),0,0)));
@@ -161,7 +167,13 @@ void InitWorld()
 	MakeArcList(arc,512,thickness);
 
 	VRAMCNT_A=VRAMCNT_A_LCDC;
-
+	VRAMCNT_B=VRAMCNT_B_LCDC;
+	VRAMCNT_C=VRAMCNT_C_LCDC;
+	VRAMCNT_D=VRAMCNT_D_LCDC;
+	VRAMCNT_E=VRAMCNT_E_LCDC;
+	VRAMCNT_F=VRAMCNT_F_LCDC;
+	VRAMCNT_G=VRAMCNT_G_LCDC;
+	
 	static int red[6]=  { 1,1,0,0,0,1 };
 	static int green[6]={ 0,1,1,1,0,0 };
 	static int blue[6]= { 0,0,0,1,1,1 };
