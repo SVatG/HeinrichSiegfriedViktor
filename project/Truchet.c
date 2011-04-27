@@ -27,7 +27,7 @@ void InitTruchet(int frame)
 	DSLoadIdentity();
 	DSPerspectivef(65,256.0/192.0,0.1,4);
 
-	DSSetFogLinearf(0,0,0,31,1,3.5,0.1,4);
+	DSSetFogLinearf(14,31,31,31,1,3.5,0.1,4);
 
 	startframe=frame;
 	rot=iquatone;

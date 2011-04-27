@@ -2,6 +2,9 @@
  * JBDS main entry point
  */
 
+#include <nds.h>
+#include <stdio.h>
+
 #include <nds/ndstypes.h>
 #include <nds/interrupts.h>
 #include <string.h>
@@ -16,6 +19,7 @@
 #include "effects.h"
 #include "Truchet.h"
 #include "Radial.h"
+#include "Tunnel.h"
 #include "Pens.h"
 #include "ARM.h"
 
@@ -34,11 +38,14 @@ extern int showmode;
 uint8_t ATTR_DTCM dtcm_buffer[12288];
 
 void fadeout(int t, int b) {
+	uint16_t* master_bright = (uint16_t*)(0x400006C);
 	if( t > b-16 ) {
-		uint16_t val = 17-(b-t);
-		uint16_t* master_bright = (uint16_t*)(0x400006C);
+		uint16_t val = 18-(b-t);
 		memset( master_bright, (1<<7) | val, 2 );
 	}
+// 	else {
+// 		memset( master_bright, (1<<7) | 15, 2 );
+// 	}
 }
 
 void fadein(int t, int b) {
@@ -75,7 +82,7 @@ int main()
 	t = 0;
 
 	// Main loop
-	InitPensOnSecondaryScreen(true);
+	InitPensOnSecondaryScreen(false);
 	//InitTruchet(t);
 	InitRadial();
 // 	effect0_init();
@@ -93,6 +100,13 @@ int main()
 	mmStart( MOD_RAINBOWS_CLN, MM_PLAY_ONCE );
 	while( t<140*60 ) {
 		RunPens(pens,sizeof(pens)/sizeof(*pens),t);
+		scanKeys();
+// 		uint32_t keys=keysHeld();
+// 		if(keys&KEY_A) {
+// 			SavePenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+// 			LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+// 		}
+// 		RunTunnel(t);
 
 		if(0) {
 			effect0_update(t);
@@ -102,7 +116,7 @@ int main()
 		if( t < 16*60+30 ) {
 			RunRadial(t,dtcm_buffer);
 			fadeout(t,16*60+30);
-			if( t == 16*60+30-1 ) {
+			if( t >= 16*60+30-2 ) {
 				StopRadial();
 				cubemode = 0;
 				effect6_init();
@@ -136,12 +150,21 @@ int main()
 				effect6_init();
 			}
 		}
-		else if( t < 68*60 ) {
+		else if( t < 57*60 ) {
 			effect6_update(t);
 			fadein(t,47*60-5);
-			fadeout(t,68*60);
-			if( t >= 68*60-4 ) {
+			fadeout(t,57*60);
+			if( t >= 57*60-4 ) {
 				effect6_destroy();
+				showmode = 1;
+				InitTunnel();
+			}
+		}
+		else if( t < 68*60 ) {
+			RunTunnel(t);
+			fadein(t,57*60-5);
+			fadeout(t,68*60);
+			if( t >= 68*60-2 ) {
 				showmode = 1;
 				effect4_init();
 			}
@@ -150,7 +173,7 @@ int main()
 			effect4_update(t);
 			fadein(t,68*60-5);
 			fadeout(t,73*60);
-			if( t >= 73*60-4 ) {
+			if( t >= 73*60-2 ) {
 				effect4_destroy();
 				showmode = 0;
 				effect4_init();
@@ -160,7 +183,7 @@ int main()
 			effect4_update(t);
 			fadein(t,73*60-5);
 			fadeout(t,78*60);
-			if( t >= 78*60-4 ) {
+			if( t >= 78*60-2 ) {
 				effect4_destroy();
 				effect0_init();
 			}
@@ -197,8 +220,8 @@ int main()
 	}
 
 	// Superstitious save.
-	SavePenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
-	LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+// 	SavePenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
+// 	LoadPenData(pens,sizeof(pens)/sizeof(*pens),"fat:/rainbows.pen");
 
 	POWCNT1 = POWCNT1_ALL;
 
